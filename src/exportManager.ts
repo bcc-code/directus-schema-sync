@@ -33,7 +33,7 @@ export class ExportManager {
       watch.forEach(col => {
         actions.forEach(evt => {
           action(`${col}.${evt}`, async () => {
-						await exporter.export();		
+						await exporter.export();
 						await updateMeta();
           });
         });

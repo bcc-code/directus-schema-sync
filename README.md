@@ -25,11 +25,11 @@ Upon installing configure what data you wish to export from the DB and be able t
  4. Edit the `config.js` in the schema directory and add your collections you want to sync
  5. Finally run `directus schema-sync export` to export the schema and data from the Directus API
 
-In production it is advised to set `SYNC_SCHEMA` to `IMPORT` and in local development to `BOTH`.
+In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
 
 ### Tips
 
-You can create additional config files with the other config files, and set the name on the `SYNC_SCHEMA_CONFIG` env variable. For example to include a test data set used during testing in CI/CD. Additional config files need to export `syncCustomCollections` object like in the `config.js` file.
+You can create additional config files with the other config files, and set the name on the `SCHEMA_SYNC_CONFIG` env variable. For example to include a test data set used during testing in CI/CD. Additional config files need to export `syncCustomCollections` object like in the `config.js` file.
 
 View the comments in the `config.js` file for more information.
 
@@ -43,10 +43,11 @@ Besides auto importing and exporting, you can also run the commands manually.
 | ------- | ----------- |
 | `export` | Export the schema and data from the Directus API |
 | `import` | Import the schema and data to the Directus API |
+| `hash`| Recalculate the hash for all the data files (already happens after export) |
 
 ### Environment Variables
 
 | Variable | Description | Default |
 | -------- | ----------- | ------- |
-| `SYNC_SCHEMA` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
-| `SYNC_SCHEMA_CONFIG` | An additional config file to use in addition, eg. `test_config.js` | `null` |
+| `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
+| `SCHEMA_SYNC_CONFIG` | An additional config file to use in addition, eg. `test_config.js` | `null` |

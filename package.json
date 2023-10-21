@@ -2,7 +2,7 @@
 	"name": "directus-extension-schema-sync",
 	"description": "Sync schema and data betwreen Directus instances",
 	"icon": "sync_alt",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"keywords": [
 		"directus",
 		"directus-extension",
@@ -21,7 +21,8 @@
 	"files": [
 		"dist",
 		"install",
-		"cli.js"
+		"cli.js",
+		"README.md"
 	],
 	"scripts": {
 		"build": "directus-extension build",
@@ -30,7 +31,7 @@
 	},
 	"devDependencies": {
 		"@directus/extensions-sdk": "10.1.11",
-		"@directus/types": "^11.0.0",
+		"@directus/types": "^10.1.6",
 		"@types/node": "^20.8.7",
 		"typescript": "^5.2.2"
 	}

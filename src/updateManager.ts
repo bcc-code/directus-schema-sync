@@ -42,7 +42,7 @@ export class UpdateManager {
           mv_locked: true,
           // We set this to newer than isoTS, while we do the migration
           // If the migration fails, we can reset the lock
-          mv_ts: new Date().toISOString(),
+          mv_ts: new Date(),
         });
         this._locked = {
           hash: newHash,
@@ -63,7 +63,7 @@ export class UpdateManager {
 
     await this.db(this.tableName).where("id", this.rowId).update({
       mv_hash: this._locked.hash,
-      mv_ts: this._locked.ts,
+      mv_ts: new Date(this._locked.ts),
       mv_locked: false,
     });
 

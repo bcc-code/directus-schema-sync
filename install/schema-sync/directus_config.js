@@ -1,7 +1,11 @@
 /**
  * This file contains the default configuration for the schema exporter.
  * 
- * ONLY CHANGE THIS FILE IF YOU REALLY HAVE TO AND KNOW WHAT YOU ARE DOING!
+ * Some possibly sensitive collections are commented out, remove the comments and add filters if needed
+ * 
+ * ONLY CHANGE THIS FILE IF YOU REALLY KNOW WHAT YOU ARE DOING!
+ * 
+ * These are just some sensible settings, but you might not want to export everything
  * 
  * Add custom collections to the syncCustomCollections object in the config.js file.
  */
@@ -52,7 +56,11 @@ export const syncDirectusCollections = {
 	},
 	directus_settings: {
 		watch: ['settings'],
-		excludeFields: ['mv_hash', 'mv_ts', 'mv_locked', 'project_url'],
+		excludeFields: [
+			'project_url',
+			// always keep these 3 excluded
+			'mv_hash', 'mv_ts', 'mv_locked',
+		],
 	},
 	directus_dashboards: {
 		watch: ['dashboards'],
@@ -66,10 +74,17 @@ export const syncDirectusCollections = {
 		watch: ['flows'],
 		excludeFields: ['operations', 'user_created'],
 	},
-	directus_operations: {
+	/* directus_operations: {
 		watch: ['operations'],
 		excludeFields: ['user_created'],
-	},
+		query: {
+			filter: {
+				options: {
+					_contains: 'https'
+				}
+			}
+		}
+	}, */
 	directus_translations: {
 		watch: ['translations'],
 		excludeFields: ['id'],
@@ -78,8 +93,8 @@ export const syncDirectusCollections = {
 			sort: ['key', 'language'],
 		},
 	},
-	directus_webhooks: {
+	/* directus_webhooks: {
 		watch: ['webhooks'],
 		excludeFields: ['url'],
-	},
+	}, */
 };

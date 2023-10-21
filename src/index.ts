@@ -8,6 +8,7 @@ import { UpdateManager } from './updateManager';
 import { ADMIN_ACCOUNTABILITY, ExportHelper } from './utils';
 
 const registerHook: HookConfig = async ({ action, init }, { env, services, database, getSchema, logger }) => {
+	
   const { SchemaService, ItemsService } = services;
 
   let schema: SchemaOverview | null;
@@ -49,8 +50,8 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 			_exportManager.addCollectionExporter(syncCustomCollections, getItemsService);
 
 			// Additional config
-			if (env.SYNC_SCHEMA_CONFIG) {
-				const { syncCustomCollections } = await import(resolve(ExportHelper.schemaDir, env.SYNC_SCHEMA_CONFIG)) as { syncCustomCollections: ExportCollectionConfig };
+			if (env.SCHEMA_SYNC_CONFIG) {
+				const { syncCustomCollections } = await import(resolve(ExportHelper.schemaDir, env.SCHEMA_SYNC_CONFIG)) as { syncCustomCollections: ExportCollectionConfig };
 				if (syncCustomCollections) {
 					_exportManager.addCollectionExporter(syncCustomCollections, getItemsService);
 				} else {
@@ -62,27 +63,28 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 		return _exportManager;
 	}
 
-	const updateMeta = condenseAction(async () => {
+	const updateMeta = condenseAction(async (saveToDb = true) => {
 		const meta = await ExportHelper.updateExportMeta();
-		if (meta && (await updateManager.lockForUpdates(meta.hash, meta.ts))) {
+		if (saveToDb && meta && (await updateManager.lockForUpdates(meta.hash, meta.ts))) {
 			await updateManager.commitUpdates();
 		}
 	});
 
   function attachExporters() {
-    if (env.SYNC_SCHEMA === 'BOTH' || env.SYNC_SCHEMA === 'EXPORT') {
+    if (env.SCHEMA_SYNC === 'BOTH' || env.SCHEMA_SYNC === 'EXPORT') {
       exportManager().then((expMng) => expMng.attachAllWatchers(action, updateMeta));
     }
   }
 
   // LOAD EXPORTED SCHEMAS & COLLECTIONS
-  if (env.SYNC_SCHEMA === 'BOTH' || env.SYNC_SCHEMA === 'IMPORT') {
+  if (env.SCHEMA_SYNC === 'BOTH' || env.SCHEMA_SYNC === 'IMPORT') {
     init('app.before', async () => {
       try {
         const meta = await ExportHelper.getExportMeta();
-        if (!meta) return; // No export meta, nothing to do
+        if (!meta) return logger.info('Nothing exported yet it seems'); // No export meta, nothing to do
         if (!(await updateManager.lockForUpdates(meta.hash, meta.ts))) return; // Schema is locked / no change, nothing to do
 
+				logger.info('Updating schema and data');
         const expMng = await exportManager();
 				await expMng.loadAll();
 
@@ -98,6 +100,15 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	
 	init('cli.before', async ({ program }) => {
 		const dbCommand = program.command('schema-sync');
+
+		dbCommand
+			.command('hash')
+			.description('Recalculate the hash for all the data files')
+			.action(async () => {
+				await updateMeta(false)
+				logger.info('Done!');
+				process.exit(0);
+			})
 
 		dbCommand
 			.command('import')
