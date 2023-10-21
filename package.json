@@ -1,0 +1,37 @@
+{
+	"name": "directus-extension-schema-sync",
+	"description": "Sync schema and data betwreen Directus instances",
+	"icon": "sync_alt",
+	"version": "1.0.0",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-custom-hook"
+	],
+	"type": "module",
+	"bin": {
+		"schema-sync": "./cli.js"
+	},
+	"directus:extension": {
+		"type": "hook",
+		"path": "dist/index.js",
+		"source": "src/index.ts",
+		"host": "^10.1.11"
+	},
+	"files": [
+		"dist",
+		"install",
+		"cli.js"
+	],
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify",
+		"link": "directus-extension link"
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "10.1.11",
+		"@directus/types": "^11.0.0",
+		"@types/node": "^20.8.7",
+		"typescript": "^5.2.2"
+	}
+}
