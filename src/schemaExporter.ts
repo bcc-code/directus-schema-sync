@@ -1,3 +1,4 @@
+import { ApiExtensionContext } from '@directus/types';
 import { readFile, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
 import type { IExporter } from './types';
@@ -9,7 +10,7 @@ export class SchemaExporter implements IExporter {
 	private _exportHandler = condenseAction(() => this.createAndSaveSnapshot());
 
 	// Directus SchemaService, database and getSchema
-	constructor(getSchemaService: () => any) {
+	constructor(getSchemaService: () => any, protected logger: ApiExtensionContext['logger']) {
 		this._getSchemaService = () => getSchemaService();
 		this._filePath = `${ExportHelper.dataDir}/schema.json`
 	}
@@ -31,7 +32,7 @@ export class SchemaExporter implements IExporter {
 				const currentSnapshot = await svc.snapshot();
 				const currentHash = svc.getHashedSnapshot(currentSnapshot).hash;
 				if (currentHash === targetHash) {
-					console.log('Schema is already up-to-date');
+					this.logger.debug('Schema is already up-to-date');
 					return;
 				}
 				const diff = await svc.diff(targetSnapshot, { currentSnapshot, force: true });

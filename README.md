@@ -1,6 +1,6 @@
-# Schema Sync
+# Schema Sync for Directus
 
-The better way to sync your Directus schema and data between environments.
+The better way to sync your Directus schema and **data** between environments.
 
 Sync **chosen** data such as
  - **Permissions**
@@ -8,7 +8,7 @@ Sync **chosen** data such as
  - **Dashboards**
  - **Your own data**
 
-**Automatically** export and import both the schema and data when you make changes via Directus or in the json data files.
+**Automatically** export and import both the schema and data when you make changes via Directus or in the **json data files**
 
 
 Upon installing configure what data you wish to export from the DB and be able to commit to your repository. Then on the other environments you can import the schema and data automatically.

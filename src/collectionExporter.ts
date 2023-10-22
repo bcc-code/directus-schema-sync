@@ -1,5 +1,5 @@
 
-import { Item, PrimaryKey, Query } from '@directus/types';
+import { ApiExtensionContext, Item, PrimaryKey, Query } from '@directus/types';
 import { readFile, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
 import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, JSONString } from './types';
@@ -23,6 +23,7 @@ class CollectionExporter implements IExporter {
 		collectionName: string, 
 		getItemsService: IGetItemsService,
 		options = DEFAULT_COLLECTION_EXPORTER_OPTIONS,
+		protected logger: ApiExtensionContext['logger']
 	) {
 		this.options = { ...DEFAULT_COLLECTION_EXPORTER_OPTIONS, ...options };
 
@@ -50,7 +51,7 @@ class CollectionExporter implements IExporter {
 
 	protected exportCollectionToFile = async () => {
 		const json = await this.getJSON()
-		console.log(`Exporting ${this.collection}: ` , json);
+		this.logger.debug(`Exporting ${this.collection}: ` , json);
 		await writeFile(this.filePath, json);
 	}
 
@@ -138,13 +139,13 @@ class CollectionExporter implements IExporter {
 
 		// Insert
 		if (toInsert.length > 0) {
-			console.log(`Inserting ${this.collection} items: `, JSON.stringify(toInsert));
+			this.logger.debug(`Inserting ${this.collection} items: `, JSON.stringify(toInsert));
 			await itemsSvc.createMany(toInsert);
 		}
 
 		// Update
 		if (Object.keys(toUpdate).length > 0) {
-			console.log(`Updating ${this.collection} items: `, JSON.stringify(toUpdate));
+			this.logger.debug(`Updating ${this.collection} items: `, JSON.stringify(toUpdate));
 			for (const [id, diff] of Object.entries(toUpdate)) {
 				await itemsSvc.updateOne(id, diff);
 			}
@@ -153,7 +154,7 @@ class CollectionExporter implements IExporter {
 		// Delete
 		const toDelete: Array<PrimaryKey> = Object.values(itemsMap).map(getPrimary);
 		if (toDelete.length > 0) {
-			console.log(`Deleting ${this.collection} items: `, JSON.stringify(toDelete));
+			this.logger.debug(`Deleting ${this.collection} items: `, JSON.stringify(toDelete));
 			await itemsSvc.deleteMany(toDelete);
 		}
 	}

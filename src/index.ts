@@ -41,19 +41,19 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 			_exportManager.addExporter({
 				watch: ['collections', 'fields', 'relations'],
-				exporter: new SchemaExporter(getSchemaService),
+				exporter: new SchemaExporter(getSchemaService, logger),
 			});
 
 			const { syncDirectusCollections } = await import(resolve(ExportHelper.schemaDir, 'directus_config.js')) as { syncDirectusCollections: ExportCollectionConfig };
 			const { syncCustomCollections } = await import(resolve(ExportHelper.schemaDir, 'config.js')) as { syncCustomCollections: ExportCollectionConfig };;
-			_exportManager.addCollectionExporter(syncDirectusCollections, getItemsService);
-			_exportManager.addCollectionExporter(syncCustomCollections, getItemsService);
+			_exportManager.addCollectionExporter(syncDirectusCollections, getItemsService, logger);
+			_exportManager.addCollectionExporter(syncCustomCollections, getItemsService, logger);
 
 			// Additional config
 			if (env.SCHEMA_SYNC_CONFIG) {
 				const { syncCustomCollections } = await import(resolve(ExportHelper.schemaDir, env.SCHEMA_SYNC_CONFIG)) as { syncCustomCollections: ExportCollectionConfig };
 				if (syncCustomCollections) {
-					_exportManager.addCollectionExporter(syncCustomCollections, getItemsService);
+					_exportManager.addCollectionExporter(syncCustomCollections, getItemsService, logger);
 				} else {
 					logger.warn(`Additonal config specified but not exporting "syncCustomCollections"`)
 				}
@@ -84,7 +84,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
         if (!meta) return logger.info('Nothing exported yet it seems'); // No export meta, nothing to do
         if (!(await updateManager.lockForUpdates(meta.hash, meta.ts))) return; // Schema is locked / no change, nothing to do
 
-				logger.info('Updating schema and data');
+				logger.info(`Updating schema and data with hash: ${meta.hash}`);
         const expMng = await exportManager();
 				await expMng.loadAll();
 
