@@ -13,7 +13,7 @@ if (command !== 'install' && command !== 'i') {
   const targetDir = process.cwd();
 
   // Test if it doesn't already exist then if it does show a warning with 3s before continuing
-  if (fs.existsSync(resolve(targetDir, 'schema-sync'))) {
+  if (await fs.access(resolve(targetDir, 'schema-sync')).then(() => true).catch(() => false)) {
     console.log('WARNING: Already install! This will overwrite your current schema sync files in 5 seconds, press CTRL+C to cancel.');
     await new Promise(resolve => setTimeout(resolve, 5000));
   }
