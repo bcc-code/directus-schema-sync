@@ -17,7 +17,11 @@ export class ExportHelper {
 		return join(ExportHelper.schemaDir, 'hash.txt');
 	}
 
-	public static updateExportMeta = async (currentHash = '') => {
+  static utcTS(isoTimestamp: string = new Date().toISOString()) {
+    return isoTimestamp.replace("T", " ").replace(/\.\d*Z/, "");
+  }
+
+	static async updateExportMeta(currentHash = '') {
 		const hasher = createHash('sha256');
 		const files = await readdir(ExportHelper.dataDir);
 		for (const file of files) {
@@ -31,7 +35,7 @@ export class ExportHelper {
 		// Only update hash file if it has changed
 		if (hash === currentHash) return false;
 
-		const ts = new Date().toISOString();
+		const ts = ExportHelper.utcTS();
 		const txt = hash + '@' + ts
 		
 		await writeFile(this.hashFile, txt);
@@ -41,9 +45,16 @@ export class ExportHelper {
 		};
 	}
 
-	public static fileExists = async (path: string) => (await access(path).then(() => true).catch(() => false));
+	static async fileExists(path: string) {
+		try {
+			await access(path);
+			return true;
+		} catch {
+			return false;
+		}
+	}
 
-	public static getExportMeta = async () => {
+	static async getExportMeta() {
 		if (await this.fileExists(this.hashFile)) {
 			const content = await readFile(this.hashFile, { encoding: 'utf8' });
 			const [hash, ts] = content.split('@');

@@ -1,4 +1,5 @@
 import type { Knex } from "knex";
+import { ExportHelper } from "./utils";
 
 export class UpdateManager {
   protected db: Knex;
@@ -42,7 +43,7 @@ export class UpdateManager {
           mv_locked: true,
           // We set this to newer than isoTS, while we do the migration
           // If the migration fails, we can reset the lock
-          mv_ts: new Date(),
+          mv_ts: ExportHelper.utcTS(),
         });
         this._locked = {
           hash: newHash,
@@ -63,23 +64,11 @@ export class UpdateManager {
 
     await this.db(this.tableName).where("id", this.rowId).update({
       mv_hash: this._locked.hash,
-      mv_ts: new Date(this._locked.ts),
+      mv_ts: this._locked.ts,
       mv_locked: false,
     });
 
     this._locked = false;
     return true;
   }
-
-  public async install() {
-		// Check if table has fields
-		const initialized = await this.db.schema.hasColumn(this.tableName, "mv_hash")
-		if (initialized) return;
-
-    this.db.schema.table(this.tableName, (table) => {
-      table.string("mv_hash");
-			table.timestamp("mv_ts");
-			table.boolean("mv_locked").defaultTo(false).notNullable();
-    });
-  };
 }
