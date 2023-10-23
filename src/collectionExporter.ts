@@ -32,7 +32,8 @@ class CollectionExporter implements IExporter {
 
 		this.collection = collectionName;
 
-		this.filePath = `${ExportHelper.dataDir}/${collectionName}.json`
+		const fileName = this.options.prefix ? `${this.options.prefix}_${collectionName}` : collectionName;
+		this.filePath = `${ExportHelper.dataDir}/${fileName}.json`
 	}
 
 	get name() {

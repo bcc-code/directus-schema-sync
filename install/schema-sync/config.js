@@ -7,6 +7,7 @@
  * 		excludeFields: (optional) array of fields to exclude from the export,
  * 		getKey: (optional) function to get the key for the item, defaults to primary key found on schema,
  * 		query: (optional) query to use when exporting the collection, valid options are: (limit=-1 | filter | sort)
+ * 		prefix: (optional) prefix the exported json file with this string (useful for separating test data from production data)
  */
 export const syncCustomCollections = {
 	/*

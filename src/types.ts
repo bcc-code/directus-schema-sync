@@ -29,6 +29,7 @@ export type CollectionExporterOptions = {
 	excludeFields?: string[];
 	getKey?: (o: Item) => PrimaryKey;
 	query?: Pick<Query, 'filter'|'sort'|'limit'>;
+	prefix?: string;
 }
 
 //
