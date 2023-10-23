@@ -2,6 +2,8 @@
 
 The better way to sync your Directus schema and **data** between environments.
 
+![Schema Sync](https://raw.githubusercontent.com/bcc-code/directus-schema-sync/8b44ddba3a07dc881b44c003b39b7951b80a22f3/SchemaSync.png)
+
 Sync **chosen** data such as
  - **Permissions**
  - **Flows**
