@@ -1,3 +1,7 @@
+## Version 1.1.5
+
+Set query limit to -1, unless manually set in config.js inside the query option. This fixes an issue with not all permissions being fetched.
+
 ## Version 1.1.4
 
 Add optional prefix option to differentiate between different sets of data. Prefix can be set on the collection configuration in config.js eg. `test` or `prod`.

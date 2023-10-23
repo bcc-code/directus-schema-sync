@@ -77,7 +77,8 @@ class CollectionExporter implements IExporter {
 		const getPrimary = (o: Item) => o[schema.primary];
 		const getKey = this.options.getKey || getPrimary;
 
-		const query: Query = this.options.query || { limit: -1 };
+		const query: Query = this.options.query || {};
+		query.limit = query.limit || -1;
 		query.fields = inclFields;
 		query.sort = query.sort || [schema.primary];
 
