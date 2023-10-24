@@ -25,8 +25,10 @@ export class ExportManager {
   }
 
   // SECOND: Import if needed
-  public loadAll() {
-    return Promise.all(this.exporters.map(e => e.exporter.load()));
+  public async loadAll() {
+    for (let exporter of this.exporters) {
+      await exporter.exporter.load();
+    }    
   }
 
   // THIRD: Start watching for changes

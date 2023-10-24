@@ -1,11 +1,10 @@
 import { HookConfig, SchemaOverview } from '@directus/types';
-import { resolve } from 'path';
 import { condenseAction } from './condenseAction';
 import { ExportManager } from './exportManager';
 import { SchemaExporter } from './schemaExporter';
 import type { ExportCollectionConfig, IGetItemsService, ItemsService } from './types';
 import { UpdateManager } from './updateManager';
-import { ADMIN_ACCOUNTABILITY, ExportHelper } from './utils';
+import { ADMIN_ACCOUNTABILITY, ExportHelper, nodeImport } from './utils';
 
 const registerHook: HookConfig = async ({ action, init }, { env, services, database, getSchema, logger }) => {
 	
@@ -44,14 +43,14 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 				exporter: new SchemaExporter(getSchemaService, logger),
 			});
 
-			const { syncDirectusCollections } = await import(resolve(ExportHelper.schemaDir, 'directus_config.js')) as { syncDirectusCollections: ExportCollectionConfig };
-			const { syncCustomCollections } = await import(resolve(ExportHelper.schemaDir, 'config.js')) as { syncCustomCollections: ExportCollectionConfig };;
+			const { syncDirectusCollections } = await nodeImport(ExportHelper.schemaDir, 'directus_config.js') as { syncDirectusCollections: ExportCollectionConfig };
+			const { syncCustomCollections } = await nodeImport(ExportHelper.schemaDir, 'config.js') as { syncCustomCollections: ExportCollectionConfig };;
 			_exportManager.addCollectionExporter(syncDirectusCollections, getItemsService, logger);
 			_exportManager.addCollectionExporter(syncCustomCollections, getItemsService, logger);
 
 			// Additional config
 			if (env.SCHEMA_SYNC_CONFIG) {
-				const { syncCustomCollections } = await import(resolve(ExportHelper.schemaDir, env.SCHEMA_SYNC_CONFIG)) as { syncCustomCollections: ExportCollectionConfig };
+				const { syncCustomCollections } = await nodeImport(ExportHelper.schemaDir, env.SCHEMA_SYNC_CONFIG) as { syncCustomCollections: ExportCollectionConfig };
 				if (syncCustomCollections) {
 					_exportManager.addCollectionExporter(syncCustomCollections, getItemsService, logger);
 				} else {

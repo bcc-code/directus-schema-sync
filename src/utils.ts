@@ -1,8 +1,13 @@
 import { createHash } from 'crypto';
 import { access, readFile, readdir, writeFile } from 'fs/promises';
 import { resolve } from 'path';
+import { pathToFileURL } from 'url';
 
 export const ADMIN_ACCOUNTABILITY = { role: '', admin: true };
+
+export function nodeImport(dir: string, file: string) {
+	return import(pathToFileURL(resolve(dir, file)).href);
+}
 
 export class ExportHelper {
 	static get schemaDir() {

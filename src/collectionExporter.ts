@@ -141,14 +141,15 @@ class CollectionExporter implements IExporter {
 
 		// Insert
 		if (toInsert.length > 0) {
-			this.logger.debug(`Inserting ${this.collection} items: `, JSON.stringify(toInsert));
+			this.logger.debug(`Inserting ${toInsert.length} x ${this.collection} items`);
 			await itemsSvc.createMany(toInsert);
 		}
 
 		// Update
-		if (Object.keys(toUpdate).length > 0) {
-			this.logger.debug(`Updating ${this.collection} items: `, JSON.stringify(toUpdate));
-			for (const [id, diff] of Object.entries(toUpdate)) {
+		const updateEntries = Object.entries(toUpdate);
+		if (updateEntries.length > 0) {
+			this.logger.debug(`Updating ${updateEntries.length} x ${this.collection} items`);
+			for (const [id, diff] of updateEntries) {
 				await itemsSvc.updateOne(id, diff);
 			}
 		}
@@ -156,7 +157,7 @@ class CollectionExporter implements IExporter {
 		// Delete
 		const toDelete: Array<PrimaryKey> = Object.values(itemsMap).map(getPrimary);
 		if (toDelete.length > 0) {
-			this.logger.debug(`Deleting ${this.collection} items: `, JSON.stringify(toDelete));
+			this.logger.debug(`Deleting ${toDelete.length} x ${this.collection} items`);
 			await itemsSvc.deleteMany(toDelete);
 		}
 	}

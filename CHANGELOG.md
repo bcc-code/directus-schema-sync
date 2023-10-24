@@ -1,4 +1,10 @@
-## Version 1.1.6
+## Version 1.1.7
+
+Fix order in which tasks are exported and imported. Specifically crucial for fields and relations.
+Fix issue for dynamic import of config on windows systems.
+Update logging to reflect amount of items being imported/exported.
+
+## ~~Version 1.1.6~~
 
 Switch from using path.join to path.resolve to use absolute paths as required by Windows.
 

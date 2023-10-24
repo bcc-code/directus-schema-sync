@@ -10,28 +10,28 @@
  * Add custom collections to the syncCustomCollections object in the config.js file.
  */
 export const syncDirectusCollections = {
-	directus_collections: {
+	/*directus_collections: {
 		watch: ['relations'],
 		query: {
 			sort: ['collection'],
 		},
-	},
-	directus_fields: {
+	},*/
+	/*directus_fields: {
 		watch: ['fields', 'collections'],
 		excludeFields: ['id'],
 		getKey: (o) => `${o.collection}-${o.field}`,
 		query: {
 			sort: ['collection', 'field'],
 		},
-	},
-	directus_relations: {
+	},*/
+	/*directus_relations: {
 		watch: ['relations'],
 		excludeFields: ['id'],
 		getKey: (o) => `${o.many_collection}-${o.many_field}`,
 		query: {
 			sort: ['many_collection', 'many_field'],
 		},
-	},
+	},*/
 	directus_roles: {
 		watch: ['roles'],
 		excludeFields: ['users'],
