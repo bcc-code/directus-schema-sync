@@ -52,7 +52,7 @@ class CollectionExporter implements IExporter {
 
 	protected exportCollectionToFile = async () => {
 		const json = await this.getJSON()
-		this.logger.debug(`Exporting ${this.collection}: ` , json);
+		this.logger.debug(`Exporting ${this.collection}`);
 		await writeFile(this.filePath, json);
 	}
 
