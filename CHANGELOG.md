@@ -1,3 +1,7 @@
+## Version 1.1.6
+
+Switch from using path.join to path.resolve to use absolute paths as required by Windows.
+
 ## Version 1.1.5
 
 Set query limit to -1, unless manually set in config.js inside the query option. This fixes an issue with not all permissions being fetched.

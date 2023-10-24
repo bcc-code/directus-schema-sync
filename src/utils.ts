@@ -1,20 +1,20 @@
 import { createHash } from 'crypto';
 import { access, readFile, readdir, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { resolve } from 'path';
 
 export const ADMIN_ACCOUNTABILITY = { role: '', admin: true };
 
 export class ExportHelper {
 	static get schemaDir() {
-		return join(process.cwd(), 'schema-sync');
+		return resolve(process.cwd(), 'schema-sync');
 	}
 
 	static get dataDir() {
-		return join(ExportHelper.schemaDir, 'data');
+		return resolve(ExportHelper.schemaDir, 'data');
 	}
 
 	static get hashFile() {
-		return join(ExportHelper.schemaDir, 'hash.txt');
+		return resolve(ExportHelper.schemaDir, 'hash.txt');
 	}
 
   static utcTS(isoTimestamp: string = new Date().toISOString()) {
