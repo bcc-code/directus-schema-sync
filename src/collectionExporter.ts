@@ -64,22 +64,25 @@ class CollectionExporter implements IExporter {
 			throw new Error(`Schema for ${this.collection} not found`)
 		}
 
-		let inclFields = Object.keys(schema.fields)
 		const exclFields = this.options.excludeFields || []
-		if (exclFields.length) {
-			if (exclFields.includes(schema.primary) && !this.options.getKey) {
-				throw new Error(`Can't exclude primary field ${schema.primary} without providing a getKey function`)
+		if (exclFields.includes(schema.primary) && !this.options.getKey) {
+			throw new Error(`Can't exclude primary field ${schema.primary} without providing a getKey function`)
+		}
+		
+		let inclFields = [];
+		for (const fieldName in schema.fields) {
+			const field = schema.fields[fieldName]!;
+			if (!field.alias && !exclFields.includes(fieldName)) {
+				inclFields.push(fieldName);
 			}
-
-			inclFields = inclFields.filter(f => !exclFields.includes(f))
 		}
 
 		const getPrimary = (o: Item) => o[schema.primary];
 		const getKey = this.options.getKey || getPrimary;
 
 		const query: Query = this.options.query || {};
-		query.limit = query.limit || -1;
 		query.fields = inclFields;
+		query.limit = query.limit || -1;
 		query.sort = query.sort || [schema.primary];
 
 		const queryWithPrimary: Query = exclFields.includes(schema.primary) ? { ...query, fields: [...inclFields, schema.primary] } : query;

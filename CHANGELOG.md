@@ -1,3 +1,11 @@
+## Version 1.2.0
+
+Excluding alias fields by default.
+
+**Benefit** Reduces the amount of fields you have to add to the exclude list.
+
+**Why?** Since alias fields don't exist in the DB, they often end up being an array containing the ids of the related items. Since you should be exporting the related items anyways with the foreign key fields, this is both redundant and causes issues when importing.
+
 ## Version 1.1.7
 
 Fix order in which tasks are exported and imported. Specifically crucial for fields and relations.
