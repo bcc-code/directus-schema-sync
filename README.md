@@ -9,6 +9,7 @@ Sync **chosen** data such as
  - **Flows**
  - **Dashboards**
  - **Your own data**
+ - **Test data for CI/CD flows**
 
 **Automatically** export and import both the schema and data when you make changes via Directus or in the **json data files**
 
@@ -19,7 +20,7 @@ Upon installing configure what data you wish to export from the DB and be able t
 
 **IMPORTANT** Always be careful with what you export and commit to your repository.
 
-## Install & Usage
+## Install (via NPM)
 
  1. `npm install directus-extension-schema-sync`
  2. Then run `npx schema-sync install` to install the extension's migration and config files
@@ -28,6 +29,24 @@ Upon installing configure what data you wish to export from the DB and be able t
  5. Finally run `directus schema-sync export` to export the schema and data from the Directus API
 
 In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
+
+### Notes
+
+If this is the **first extension you are installing**, then a new `package.json` file will be created in the extensions folder. In order for everything to work you need to add the following to the `package.json` file: `"type": "module"`. This is because the extension uses ES6 modules.
+
+## Install (via Docker)
+
+If you don't already have a Dockerfile, you can use the following [instructions to get started.](https://docs.directus.io/extensions/installing-extensions.html)
+
+Update your Dockerfile to include the following:
+
+```dockerfile
+RUN pnpm install directus-extension-schema-sync
+COPY ./schema-sync ./schema-sync
+COPY ./extensions ./extensions
+```
+
+## Usage
 
 ### Tips
 
@@ -53,3 +72,8 @@ Besides auto importing and exporting, you can also run the commands manually.
 | -------- | ----------- | ------- |
 | `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
 | `SCHEMA_SYNC_CONFIG` | An additional config file to use in addition, eg. `test_config.js` | `null` |
+
+
+## Contributing
+
+Contributions are welcome. Please open an issue or pull request.

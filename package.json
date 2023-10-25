@@ -3,10 +3,16 @@
 	"description": "Sync schema and data betwreen Directus instances",
 	"icon": "sync_alt",
 	"version": "1.2.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/bcc-code/directus-schema-sync.git"
+	},
 	"keywords": [
 		"directus",
 		"directus-extension",
-		"directus-custom-hook"
+		"directus-custom-hook",
+		"directus-schema",
+		"directus-data"
 	],
 	"type": "module",
 	"bin": {
