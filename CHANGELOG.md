@@ -1,3 +1,7 @@
+## Version 1.2.2
+
+ - Sort automatically by sort field first with fallback to primary key.
+
 ## Version 1.2.1 ⚠️
 
  - **NOTE** This update will remove duplicate rows if the same key matches multiple rows.
