@@ -50,7 +50,9 @@ COPY ./extensions ./extensions
 
 ### Tips
 
-You can create additional config files with the other config files, and set the name on the `SCHEMA_SYNC_CONFIG` env variable. For example to include a test data set used during testing in CI/CD. Additional config files need to export `syncCustomCollections` object like in the `config.js` file.
+**Order matters** when importing and exporting. For example if you have a collection (A) with a relation to another collection (B), then ensure in the config that collection (B) comes first. This is so when we import, we first import B, then A. Deletions happen afterward in the reverse order.
+
+You can create **additional config files** with the other config files, and set the name on the `SCHEMA_SYNC_CONFIG` env variable. For example to include a test data set used during testing in CI/CD. Additional config files need to export `syncCustomCollections` object like in the `config.js` file.
 
 View the comments in the `config.js` file for more information.
 

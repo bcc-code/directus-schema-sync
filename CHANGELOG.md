@@ -1,34 +1,42 @@
+## Version 1.2.1
+
+ - Change order in which deletions work.
+   - This fixes an issue where a collection with a relation to another collection would fail to import due to the relation being a constraint.
+ - Add try/catch to use best-effort when importing data.
+
 ## Version 1.2.0
 
-Excluding alias fields by default.
+- Excluding alias fields by default.
 
-**Benefit** Reduces the amount of fields you have to add to the exclude list.
+  - **Benefit** Reduces the amount of fields you have to add to the exclude list.
 
-**Why?** Since alias fields don't exist in the DB, they often end up being an array containing the ids of the related items. Since you should be exporting the related items anyways with the foreign key fields, this is both redundant and causes issues when importing.
+  - **Why?** Since alias fields don't exist in the DB, they often end up being an array containing the ids of the related items. Since you should be exporting the related items anyways with the foreign key fields, this is both redundant and causes issues when importing.
 
 ## Version 1.1.7
 
-Fix order in which tasks are exported and imported. Specifically crucial for fields and relations.
-Fix issue for dynamic import of config on windows systems.
+ - Fix order in which tasks are exported and imported. Specifically crucial for fields and relations.
+ - Fix issue for dynamic import of config on windows systems.
 Update logging to reflect amount of items being imported/exported.
 
 ## ~~Version 1.1.6~~
 
-Switch from using path.join to path.resolve to use absolute paths as required by Windows.
+ - Switch from using path.join to path.resolve to use absolute paths as required by Windows.
 
 ## Version 1.1.5
 
-Set query limit to -1, unless manually set in config.js inside the query option. This fixes an issue with not all permissions being fetched.
+ - Set query limit to -1, unless manually set in config.js inside the query option.
+   - This fixes an issue with not all permissions being fetched.
 
 ## Version 1.1.4
 
-Add optional prefix option to differentiate between different sets of data. Prefix can be set on the collection configuration in config.js eg. `test` or `prod`.
+ - Add optional prefix option to differentiate between different sets of data.
+   - Prefix can be set on the collection configuration in config.js eg. `test` or `prod`.
 
 ## Version 1.1.3
 
-Fix issue with syncing across servers with different timezones.
+- Fix issue with syncing across servers with different timezones.
 
 ## Version 1.1.2
 
-Add hash command, to regenerate hash for all data files.
-Add delay when reinstalling Schema Sync
+ - Add hash command, to regenerate hash for all data files.
+ - Add delay when reinstalling Schema Sync

@@ -43,11 +43,13 @@ class CollectionExporter implements IExporter {
 	protected _persistQueue = condenseAction(() => this.exportCollectionToFile());
 	public export = () => this._persistQueue();
 
-	public load = async () => {
+	public async load() {
 		if (await ExportHelper.fileExists(this.filePath)) {
 			const json = await readFile(this.filePath, { encoding: 'utf8' });
-			await this.loadJSON(json);
+			return await this.loadJSON(json);
 		}
+
+		return null;
 	}
 
 	protected exportCollectionToFile = async () => {
@@ -108,7 +110,7 @@ class CollectionExporter implements IExporter {
 	}
 
 	public async loadJSON(json: JSONString | null) {
-		if (!json) return;
+		if (!json) return null;
 		const loadedItems = JSON.parse(json);
 		if (!Array.isArray(loadedItems)) {
 			throw new Error(`Invalid JSON: ${json}`);
@@ -157,12 +159,16 @@ class CollectionExporter implements IExporter {
 			}
 		}
 
-		// Delete
-		const toDelete: Array<PrimaryKey> = Object.values(itemsMap).map(getPrimary);
-		if (toDelete.length > 0) {
-			this.logger.debug(`Deleting ${toDelete.length} x ${this.collection} items`);
-			await itemsSvc.deleteMany(toDelete);
+		const finishUp = async () => {
+			// Delete
+			const toDelete: Array<PrimaryKey> = Object.values(itemsMap).map(getPrimary);
+			if (toDelete.length > 0) {
+				this.logger.debug(`Deleting ${toDelete.length} x ${this.collection} items`);
+				await itemsSvc.deleteMany(toDelete);
+			}
 		}
+
+		return finishUp;
 	}
 }
 

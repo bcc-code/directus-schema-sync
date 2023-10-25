@@ -5,6 +5,8 @@ import { ExportCollectionConfig, IExporterConfig, IGetItemsService } from './typ
 export class ExportManager {
   protected exporters: IExporterConfig[] = [];
 
+  constructor(protected logger: ApiExtensionContext['logger']) {}
+
   // FIRST: Add exporters
   public addExporter(exporterConfig: IExporterConfig) {
     this.exporters.push(exporterConfig);
@@ -12,23 +14,32 @@ export class ExportManager {
 
   public addCollectionExporter(
     config: ExportCollectionConfig,
-    getItemsService: IGetItemsService,
-    logger: ApiExtensionContext['logger']
+    getItemsService: IGetItemsService
   ) {
     for (let collectionName in config) {
       const opts = config[collectionName]!;
       this.exporters.push({
         watch: opts.watch,
-        exporter: new CollectionExporter(collectionName, getItemsService, opts, logger),
+        exporter: new CollectionExporter(collectionName, getItemsService, opts, this.logger),
       });
     }
   }
 
   // SECOND: Import if needed
   public async loadAll() {
-    for (let exporter of this.exporters) {
-      await exporter.exporter.load();
-    }    
+    this._loadNextExporter(0);
+  }
+
+  protected async _loadNextExporter(i = 0) {
+    if (i >= this.exporters.length) return;
+
+    try {
+      const finishUp = await this.exporters[i]!.exporter.load();
+      await this._loadNextExporter(i + 1);
+      if (finishUp) await finishUp();
+    } catch (e) {
+      this.logger.error(e);
+    }
   }
 
   // THIRD: Start watching for changes

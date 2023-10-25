@@ -8,7 +8,7 @@ export type IGetItemsService = (collectionName: string) => Promise<ItemsService>
 
 export interface IExporter {
 	name: string;
-	load: () => Promise<void>;
+	load: () => Promise<(() => Promise<void>) | null | void>;
 	export: () => Promise<void>;
 }
 

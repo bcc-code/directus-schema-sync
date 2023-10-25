@@ -3,41 +3,15 @@
  * 
  * Some possibly sensitive collections are commented out, remove the comments and add filters if needed
  * 
- * ONLY CHANGE THIS FILE IF YOU REALLY KNOW WHAT YOU ARE DOING!
+ * Uncomment the collection you want to export.
  * 
  * These are just some sensible settings, but you might not want to export everything
  * 
  * Add custom collections to the syncCustomCollections object in the config.js file.
  */
 export const syncDirectusCollections = {
-	/*directus_collections: {
-		watch: ['relations'],
-		query: {
-			sort: ['collection'],
-		},
-	},*/
-	/*directus_fields: {
-		watch: ['fields', 'collections'],
-		excludeFields: ['id'],
-		getKey: (o) => `${o.collection}-${o.field}`,
-		query: {
-			sort: ['collection', 'field'],
-		},
-	},*/
-	/*directus_relations: {
-		watch: ['relations'],
-		excludeFields: ['id'],
-		getKey: (o) => `${o.many_collection}-${o.many_field}`,
-		query: {
-			sort: ['many_collection', 'many_field'],
-		},
-	},*/
 	directus_roles: {
 		watch: ['roles'],
-		excludeFields: ['users'],
-		query: {
-			filter: { name: { _neq: 'Administrator' } },
-		},
 	},
 	directus_folders: {
 		watch: ['folders'],
@@ -70,21 +44,24 @@ export const syncDirectusCollections = {
 		watch: ['panels'],
 		excludeFields: ['user_created'],
 	},
-	directus_flows: {
+	/*directus_flows: {
 		watch: ['flows'],
 		excludeFields: ['operations', 'user_created'],
+		query: {
+			filter: {
+				trigger: { _neq: 'webhook' },
+			},
+		},
 	},
-	/* directus_operations: {
+	directus_operations: {
 		watch: ['operations'],
 		excludeFields: ['user_created'],
 		query: {
 			filter: {
-				options: {
-					_contains: 'https'
-				}
-			}
-		}
-	}, */
+				flow: { trigger: { _neq: 'webhook' } },
+			},
+		},
+	},*/
 	directus_translations: {
 		watch: ['translations'],
 		excludeFields: ['id'],
@@ -97,4 +74,28 @@ export const syncDirectusCollections = {
 		watch: ['webhooks'],
 		excludeFields: ['url'],
 	}, */
+	
+	// These are already exported via schema, so you might not need them
+	/*directus_collections: {
+		watch: ['relations'],
+		query: {
+			sort: ['collection'],
+		},
+	},*/
+	/*directus_fields: {
+		watch: ['fields', 'collections'],
+		excludeFields: ['id'],
+		getKey: (o) => `${o.collection}-${o.field}`,
+		query: {
+			sort: ['collection', 'field'],
+		},
+	},*/
+	/*directus_relations: {
+		watch: ['relations'],
+		excludeFields: ['id'],
+		getKey: (o) => `${o.many_collection}-${o.many_field}`,
+		query: {
+			sort: ['many_collection', 'many_field'],
+		},
+	},*/
 };

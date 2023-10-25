@@ -36,7 +36,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	let _exportManager: ExportManager;
 	const exportManager = async () => {
 		if (!_exportManager) {
-			_exportManager = new ExportManager();
+			_exportManager = new ExportManager(logger);
 
 			_exportManager.addExporter({
 				watch: ['collections', 'fields', 'relations'],
@@ -45,14 +45,14 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 			const { syncDirectusCollections } = await nodeImport(ExportHelper.schemaDir, 'directus_config.js') as { syncDirectusCollections: ExportCollectionConfig };
 			const { syncCustomCollections } = await nodeImport(ExportHelper.schemaDir, 'config.js') as { syncCustomCollections: ExportCollectionConfig };;
-			_exportManager.addCollectionExporter(syncDirectusCollections, getItemsService, logger);
-			_exportManager.addCollectionExporter(syncCustomCollections, getItemsService, logger);
+			_exportManager.addCollectionExporter(syncDirectusCollections, getItemsService);
+			_exportManager.addCollectionExporter(syncCustomCollections, getItemsService);
 
 			// Additional config
 			if (env.SCHEMA_SYNC_CONFIG) {
 				const { syncCustomCollections } = await nodeImport(ExportHelper.schemaDir, env.SCHEMA_SYNC_CONFIG) as { syncCustomCollections: ExportCollectionConfig };
 				if (syncCustomCollections) {
-					_exportManager.addCollectionExporter(syncCustomCollections, getItemsService, logger);
+					_exportManager.addCollectionExporter(syncCustomCollections, getItemsService);
 				} else {
 					logger.warn(`Additonal config specified but not exporting "syncCustomCollections"`)
 				}
