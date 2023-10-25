@@ -85,7 +85,7 @@ class CollectionExporter implements IExporter {
 		const query: Query = this.options.query || {};
 		query.fields = inclFields;
 		query.limit = query.limit || -1;
-		query.sort = query.sort || [schema.primary];
+		query.sort = query.sort || [schema.sortField || schema.primary];
 
 		const queryWithPrimary: Query = exclFields.includes(schema.primary) ? { ...query, fields: [...inclFields, schema.primary] } : query;
 		
