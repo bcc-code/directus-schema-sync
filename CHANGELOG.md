@@ -1,5 +1,7 @@
-## Version 1.2.1
+## Version 1.2.1 ⚠️
 
+ - **NOTE** This update will remove duplicate rows if the same key matches multiple rows.
+   - This is to fix an issue where the same permission was imported multiple times.
  - Change order in which deletions work.
    - This fixes an issue where a collection with a relation to another collection would fail to import due to the relation being a constraint.
  - Add try/catch to use best-effort when importing data.

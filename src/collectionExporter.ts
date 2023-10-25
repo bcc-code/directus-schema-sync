@@ -122,13 +122,24 @@ class CollectionExporter implements IExporter {
 		const items = await itemsSvc.readByQuery(queryWithPrimary);
 
 		const itemsMap: Record<PrimaryKey, Item> = {}
-		items.forEach(o => itemsMap[getKey(o)] = o);
+		const duplicatesToDelete: Array<PrimaryKey> = [];
+		items.forEach(o => {
+			if (itemsMap[getKey(o)]) {
+				this.logger.warn(`Will deleting duplicate ${this.collection} item found #${getPrimary(o)}`);
+				duplicatesToDelete.push(getPrimary(o));
+			} else {
+				itemsMap[getKey(o)] = o
+			}
+		});
 
 		// Find differences
 		const toUpdate: Record<PrimaryKey, Item> = {};
 		const toInsert: Array<Item> = [];
+		const duplicateProcessed = new Set<PrimaryKey>();
 		loadedItems.forEach((lr: any) => {
 			const lrKey = getKey(lr);
+			if (duplicateProcessed.has(lrKey)) return;
+
 			const existing = itemsMap[lrKey];
 
 			if (existing) {
@@ -142,6 +153,8 @@ class CollectionExporter implements IExporter {
 			} else {
 				toInsert.push(lr);
 			}
+
+			duplicateProcessed.add(lrKey);
 		});
 
 		// Insert
@@ -161,7 +174,7 @@ class CollectionExporter implements IExporter {
 
 		const finishUp = async () => {
 			// Delete
-			const toDelete: Array<PrimaryKey> = Object.values(itemsMap).map(getPrimary);
+			const toDelete: Array<PrimaryKey> = duplicatesToDelete.concat(Object.values(itemsMap).map(getPrimary));
 			if (toDelete.length > 0) {
 				this.logger.debug(`Deleting ${toDelete.length} x ${this.collection} items`);
 				await itemsSvc.deleteMany(toDelete);

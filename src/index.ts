@@ -114,7 +114,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 			.description('Import all the available data from file to DB')
 			.action(async () => {
 				try {
-					logger.info(`Exporting everything to: ${ExportHelper.dataDir}`);
+					logger.info(`Importing everything from: ${ExportHelper.dataDir}`);
 					const expMng = await exportManager();
 					await expMng.loadAll();
 
