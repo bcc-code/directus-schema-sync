@@ -1,3 +1,11 @@
+# Version 1.3.0
+
+  - Add `--merge` option to import command in order to upsert data only and not delete other data.
+  - Add `onImport` and `onExport` hooks to allow for custom logic to be run before items are imported/exported.
+    - Can be used to encode or decode data before it is imported/exported.
+    - Return `null` to skip the item.
+  - Fixed invalid field issue due to memory leak.
+
 ## Version 1.2.2
 
  - Sort automatically by sort field first with fallback to primary key.

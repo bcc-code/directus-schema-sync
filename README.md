@@ -56,6 +56,30 @@ You can create **additional config files** with the other config files, and set 
 
 View the comments in the `config.js` file for more information.
 
+**Exporting user passwords** does not work out of the box due to Directus masking the exported password. In order to export the hashed value you can add the following to your config for `directus_users`
+
+```js
+onExport: async (item, itemsSrv) => {
+	if (item.password && item.password === '**********') {
+		const user = await itemsSrv.knex.select('password').from('directus_users').where('id', item.id).first();
+		if (user) {
+			item.password = user.password;
+		}
+	}
+
+	return item;
+},
+// And then to import the password
+onImport: async (item, itemsSrv) => {
+	if (item.password && item.password.startsWith('$argon')) {
+		await itemsSrv.knex('directus_users').update('password', item.password).where('id', item.id);
+		item.password = '**********';
+	}
+
+	return item;
+},
+```
+
 ### CI Commands
 
 Besides auto importing and exporting, you can also run the commands manually.
@@ -65,7 +89,7 @@ Besides auto importing and exporting, you can also run the commands manually.
 | Command | Description |
 | ------- | ----------- |
 | `export` | Export the schema and data from the Directus API |
-| `import` | Import the schema and data to the Directus API |
+| `import` | Import the schema and data to the Directus API (options: `merge`) |
 | `hash`| Recalculate the hash for all the data files (already happens after export) |
 
 ### Environment Variables

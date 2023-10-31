@@ -25,7 +25,13 @@ class CollectionExporter implements IExporter {
 		options = DEFAULT_COLLECTION_EXPORTER_OPTIONS,
 		protected logger: ApiExtensionContext['logger']
 	) {
-		this.options = { ...DEFAULT_COLLECTION_EXPORTER_OPTIONS, ...options };
+		this.options = {
+      excludeFields: [],
+      query: {
+        limit: -1
+      },
+      ...options
+    };
 
 		let srv: ItemsService;
 		this._getService = async () => srv || (srv = await getItemsService(collectionName));
@@ -43,10 +49,10 @@ class CollectionExporter implements IExporter {
 	protected _persistQueue = condenseAction(() => this.exportCollectionToFile());
 	public export = () => this._persistQueue();
 
-	public async load() {
+	public async load(merge = false) {
 		if (await ExportHelper.fileExists(this.filePath)) {
 			const json = await readFile(this.filePath, { encoding: 'utf8' });
-			return await this.loadJSON(json);
+			return await this.loadJSON(json, merge);
 		}
 
 		return null;
@@ -106,12 +112,21 @@ class CollectionExporter implements IExporter {
 		const items = await itemsSvc.readByQuery(query);
 		if (!items.length) return '';
 
-		return JSON.stringify(items, null, 2);
+		if (this.options.onExport) {
+			const alteredItems = [];
+			for (const item of items) {
+				const alteredItem = await this.options.onExport(item, itemsSvc);
+				if (alteredItem) alteredItems.push(alteredItem);
+			}
+			return JSON.stringify(alteredItems, null, 2);
+		} else {
+			return JSON.stringify(items, null, 2);
+		}
 	}
 
-	public async loadJSON(json: JSONString | null) {
+	public async loadJSON(json: JSONString | null, merge = false) {
 		if (!json) return null;
-		const loadedItems = JSON.parse(json);
+		const loadedItems = JSON.parse(json) as Array<Item>;
 		if (!Array.isArray(loadedItems)) {
 			throw new Error(`Invalid JSON: ${json}`);
 		}
@@ -136,7 +151,13 @@ class CollectionExporter implements IExporter {
 		const toUpdate: Record<PrimaryKey, Item> = {};
 		const toInsert: Array<Item> = [];
 		const duplicateProcessed = new Set<PrimaryKey>();
-		loadedItems.forEach((lr: any) => {
+
+		for (let lr of loadedItems) {
+			if (this.options.onImport) {
+				lr = await this.options.onImport(lr, itemsSvc);
+				if (!lr) return;
+			}
+			
 			const lrKey = getKey(lr);
 			if (duplicateProcessed.has(lrKey)) return;
 
@@ -155,7 +176,7 @@ class CollectionExporter implements IExporter {
 			}
 
 			duplicateProcessed.add(lrKey);
-		});
+		}
 
 		// Insert
 		if (toInsert.length > 0) {
@@ -173,11 +194,13 @@ class CollectionExporter implements IExporter {
 		}
 
 		const finishUp = async () => {
-			// Delete
-			const toDelete: Array<PrimaryKey> = duplicatesToDelete.concat(Object.values(itemsMap).map(getPrimary));
-			if (toDelete.length > 0) {
-				this.logger.debug(`Deleting ${toDelete.length} x ${this.collection} items`);
-				await itemsSvc.deleteMany(toDelete);
+			if (!merge) {
+				// Delete
+				const toDelete: Array<PrimaryKey> = duplicatesToDelete.concat(Object.values(itemsMap).map(getPrimary));
+				if (toDelete.length > 0) {
+					this.logger.debug(`Deleting ${toDelete.length} x ${this.collection} items`);
+					await itemsSvc.deleteMany(toDelete);
+				}
 			}
 		}
 

@@ -111,12 +111,13 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 		dbCommand
 			.command('import')
-			.description('Import all the available data from file to DB')
-			.action(async () => {
+			.description('Import all the available data from file to DB.')
+			.option('--merge', 'Only upsert data and not delete')
+			.action(async ({ merge }: { merge: boolean }) => {
 				try {
 					logger.info(`Importing everything from: ${ExportHelper.dataDir}`);
 					const expMng = await exportManager();
-					await expMng.loadAll();
+					await expMng.loadAll(merge);
 
 					logger.info('Done!');
 					process.exit(0);

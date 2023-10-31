@@ -8,7 +8,7 @@ export type IGetItemsService = (collectionName: string) => Promise<ItemsService>
 
 export interface IExporter {
 	name: string;
-	load: () => Promise<(() => Promise<void>) | null | void>;
+	load: (merge?: boolean) => Promise<(() => Promise<void>) | null | void>;
 	export: () => Promise<void>;
 }
 
@@ -30,6 +30,8 @@ export type CollectionExporterOptions = {
 	getKey?: (o: Item) => PrimaryKey;
 	query?: Pick<Query, 'filter'|'sort'|'limit'>;
 	prefix?: string;
+	onExport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
+	onImport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
 }
 
 //

@@ -26,16 +26,16 @@ export class ExportManager {
   }
 
   // SECOND: Import if needed
-  public async loadAll() {
+  public async loadAll(merge = false) {
     await this._loadNextExporter(0);
   }
 
-  protected async _loadNextExporter(i = 0) {
+  protected async _loadNextExporter(i = 0, merge = false) {
     if (i >= this.exporters.length) return;
 
     try {
-      const finishUp = await this.exporters[i]!.exporter.load();
-      await this._loadNextExporter(i + 1);
+      const finishUp = await this.exporters[i]!.exporter.load(merge);
+      await this._loadNextExporter(i + 1, merge);
       if (finishUp) await finishUp();
     } catch (e) {
       this.logger.error(e);
