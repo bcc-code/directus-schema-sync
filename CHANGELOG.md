@@ -1,5 +1,9 @@
 # Version 1.3.0
 
+  - Fix bug where process returns early without importing all data, when using onImport.
+
+# ~~Version 1.3.0~~
+
   - Add `--merge` option to import command in order to upsert data only and not delete other data.
   - Add `onImport` and `onExport` hooks to allow for custom logic to be run before items are imported/exported.
     - Can be used to encode or decode data before it is imported/exported.

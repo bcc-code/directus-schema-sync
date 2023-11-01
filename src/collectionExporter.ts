@@ -154,12 +154,12 @@ class CollectionExporter implements IExporter {
 
 		for (let lr of loadedItems) {
 			if (this.options.onImport) {
-				lr = await this.options.onImport(lr, itemsSvc);
-				if (!lr) return;
+				lr = await this.options.onImport(lr, itemsSvc) as Item;
+				if (!lr) continue;
 			}
 			
 			const lrKey = getKey(lr);
-			if (duplicateProcessed.has(lrKey)) return;
+			if (duplicateProcessed.has(lrKey)) continue;
 
 			const existing = itemsMap[lrKey];
 
