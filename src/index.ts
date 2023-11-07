@@ -1,8 +1,6 @@
 import { HookConfig, SchemaOverview } from '@directus/types';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { condenseAction } from './condenseAction';
+import { copyConfig } from './copyConfig';
 import { ExportManager } from './exportManager';
 import { SchemaExporter } from './schemaExporter';
 import type { ExportCollectionConfig, IGetItemsService, ItemsService } from './types';
@@ -111,17 +109,8 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 				console.log('Installing Schema sync...');
 				await updateManager.ensureInstalled();
 
-				const __dirname = path.dirname(fileURLToPath(import.meta.url));
-				const srcDir = path.resolve(__dirname, 'install');
-				const targetDir = process.cwd();
+				await copyConfig(force);
 
-				// Test if it doesn't already exist then if it does show a warning with 3s before continuing
-				if (!force && await fs.access(path.resolve(targetDir, 'schema-sync')).then(() => true).catch(() => false)) {
-					console.log('Config folder already exists, use --force to override');
-					process.exit(0);
-				}
-
-				await fs.cp(srcDir, targetDir, { recursive: true });
 				logger.info('Done!');
 				process.exit(0);
 			})
