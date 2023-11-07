@@ -47,7 +47,7 @@ export const syncDirectusCollections = {
 	directus_presets: {
 		watch: ['presets'],
 		excludeFields: ['id'],
-		getKey: (o) => `${o.role ?? 'all'}-${o.collection}-${o.name || 'default'}`,
+		getKey: (o) => `${o.role ?? 'all'}-${o.collection}-${o.bookmark || 'default'}`,
 		query: {
 			filter: {
 				user: { _null: true}

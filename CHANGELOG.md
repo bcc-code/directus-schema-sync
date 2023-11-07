@@ -1,4 +1,8 @@
-# Version 1.4.0
+# Version 1.4.1
+
+  - Fixed config for `directus_presets` getKey should be `${o.role ?? 'all'}-${o.collection}-${o.bookmark || 'default'}` instead of `${o.role ?? 'all'}-${o.collection}-${o.name || 'default'}`
+
+## Version 1.4.0
 
   - Replaced cli command for install from `npx schema-sync install` to `npx directus schema-sync install`.
     - This way we directly create the required columns in the `directus_settings` table.
