@@ -44,6 +44,16 @@ export const syncDirectusCollections = {
 		watch: ['panels'],
 		excludeFields: ['user_created'],
 	},
+	directus_presets: {
+		watch: ['presets'],
+		excludeFields: ['id'],
+		getKey: (o) => `${o.role ?? 'all'}-${o.collection}-${o.name || 'default'}`,
+		query: {
+			filter: {
+				user: { _null: true}
+			}
+		}
+	},
 	/*directus_flows: {
 		watch: ['flows'],
 		excludeFields: ['operations', 'user_created'],
