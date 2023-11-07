@@ -23,10 +23,9 @@ Upon installing configure what data you wish to export from the DB and be able t
 ## Install (via NPM)
 
  1. `npm install directus-extension-schema-sync`
- 2. Then run `npx schema-sync install` to install the extension's migration and config files
- 3. Run `npx directus database migrate:latest` to run the migration that will add required columns to the `directus_settings` table
- 4. Edit the `config.js` in the schema directory and add your collections you want to sync
- 5. Finally run `directus schema-sync export` to export the schema and data from the Directus API
+ 2. Then run `directus schema-sync install` to install the extension's columns in the database and add the config folder
+ 3. Edit the `config.js` in the schema directory and add your collections you want to sync
+ 4. Finally run `directus schema-sync export` to export the schema and data from the Directus API
 
 In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
 
@@ -91,6 +90,7 @@ Besides auto importing and exporting, you can also run the commands manually.
 | `export` | Export the schema and data from the Directus API |
 | `import` | Import the schema and data to the Directus API (options: `merge`) |
 | `hash`| Recalculate the hash for all the data files (already happens after export) |
+| `install` | Install the extension's columns in the database and add the config folder |
 
 ### Environment Variables
 
