@@ -29,6 +29,8 @@ Upon installing configure what data you wish to export from the DB and be able t
 
 In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
 
+View changelog for more information. [CHANGELOG.md](https://github.com/bcc-code/directus-schema-sync/blob/main/CHANGELOG.md)
+
 ### Notes
 
 If this is the **first extension you are installing**, then a new `package.json` file will be created in the extensions folder. In order for everything to work you need to add the following to the `package.json` file: `"type": "module"`. This is because the extension uses ES6 modules.

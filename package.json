@@ -24,7 +24,6 @@
 	"files": [
 		"dist",
 		"install",
-		"cli.js",
 		"README.md"
 	],
 	"scripts": {

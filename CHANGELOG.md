@@ -5,11 +5,11 @@
     - NOTE: If you have installed before, you can now remove the migration file from your migrations folder.
   - Added config for directus_presets to sync global presets.
 
-# Version 1.3.1
+## Version 1.3.1
 
   - Fix bug where process returns early without importing all data, when using onImport.
 
-# ~~Version 1.3.0~~
+## ~~Version 1.3.0~~
 
   - Add `--merge` option to import command in order to upsert data only and not delete other data.
   - Add `onImport` and `onExport` hooks to allow for custom logic to be run before items are imported/exported.
