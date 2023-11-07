@@ -1,4 +1,7 @@
 import { HookConfig, SchemaOverview } from '@directus/types';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { condenseAction } from './condenseAction';
 import { ExportManager } from './exportManager';
 import { SchemaExporter } from './schemaExporter';
@@ -99,6 +102,29 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	
 	init('cli.before', async ({ program }) => {
 		const dbCommand = program.command('schema-sync');
+
+		dbCommand
+			.command('install')
+			.description('Ensures the DB is ready for schema sync, and creates the schema-sync config folder')
+			.option('--force', 'Override schema-sync config folder')
+			.action(async ({ force }: { force: boolean }) => {
+				console.log('Installing Schema sync...');
+				await updateManager.ensureInstalled();
+
+				const __dirname = path.dirname(fileURLToPath(import.meta.url));
+				const srcDir = path.resolve(__dirname, 'install');
+				const targetDir = process.cwd();
+
+				// Test if it doesn't already exist then if it does show a warning with 3s before continuing
+				if (!force && await fs.access(path.resolve(targetDir, 'schema-sync')).then(() => true).catch(() => false)) {
+					console.log('Config folder already exists, use --force to override');
+					process.exit(0);
+				}
+
+				await fs.cp(srcDir, targetDir, { recursive: true });
+				logger.info('Done!');
+				process.exit(0);
+			})
 
 		dbCommand
 			.command('hash')

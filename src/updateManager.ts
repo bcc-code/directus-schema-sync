@@ -71,4 +71,20 @@ export class UpdateManager {
     this._locked = false;
     return true;
   }
+
+  public async ensureInstalled() {
+    const tableName = 'directus_settings';
+
+    // Check if one of the new columns exists
+    const hasNewColumn = await this.db.schema.hasColumn(tableName, 'mv_hash'); // using 'mv_hash' as the indicator
+
+    // If the indicator column doesn't exist, add all new columns
+    if (!hasNewColumn) {
+      await this.db.schema.table('directus_settings', (table) => {
+        table.string("mv_hash").defaultTo('').notNullable();
+        table.timestamp("mv_ts", { useTz: true }).defaultTo('2020-01-01').notNullable();
+        table.boolean("mv_locked").defaultTo(false).notNullable();
+      });
+    }
+  }
 }

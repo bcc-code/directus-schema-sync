@@ -1,4 +1,11 @@
-# Version 1.3.0
+# Version 1.4.0
+
+  - Replaced cli command for install from `npx schema-sync install` to `npx directus schema-sync install`.
+    - This way we directly create the required columns in the `directus_settings` table.
+    - NOTE: If you have installed before, you can now remove the migration file from your migrations folder.
+  - Added config for directus_presets to sync global presets.
+
+# Version 1.3.1
 
   - Fix bug where process returns early without importing all data, when using onImport.
 
