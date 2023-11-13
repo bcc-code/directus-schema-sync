@@ -20,7 +20,33 @@ Upon installing configure what data you wish to export from the DB and be able t
 
 **IMPORTANT** Always be careful with what you export and commit to your repository.
 
-## Install (via NPM)
+# Install
+
+## via Docker
+
+If you don't already have a Dockerfile, you can use the following [instructions to get started.](https://docs.directus.io/extensions/installing-extensions.html)
+
+Update your Dockerfile to include the following:
+
+```dockerfile
+RUN pnpm install directus-extension-schema-sync
+COPY ./schema-sync ./schema-sync
+```
+
+During local development, add the `schema-sync` folder as volumn to the `docker-compose` file.
+
+```yaml
+volumes:
+	- ./schema-sync:/directus/extensions/schema-sync
+```
+
+Upon first time running the container, run the following command to install the extension's columns in the database and add the config folder. (Replace the first `directus` with the name of your container if it is different)
+
+```bash
+docker-compose exec directus npx directus schema-sync install
+```
+
+## via NPM (Assuming you are running Directus via NPM)
 
  1. `npm install directus-extension-schema-sync`
  2. Then run `directus schema-sync install` to install the extension's columns in the database and add the config folder
@@ -31,25 +57,9 @@ In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local develo
 
 View changelog for more information. [CHANGELOG.md](https://github.com/bcc-code/directus-schema-sync/blob/main/CHANGELOG.md)
 
-### Notes
+# Usage
 
-If this is the **first extension you are installing**, then a new `package.json` file will be created in the extensions folder. In order for everything to work you need to add the following to the `package.json` file: `"type": "module"`. This is because the extension uses ES6 modules.
-
-## Install (via Docker)
-
-If you don't already have a Dockerfile, you can use the following [instructions to get started.](https://docs.directus.io/extensions/installing-extensions.html)
-
-Update your Dockerfile to include the following:
-
-```dockerfile
-RUN pnpm install directus-extension-schema-sync
-COPY ./schema-sync ./schema-sync
-COPY ./extensions ./extensions
-```
-
-## Usage
-
-### Tips
+## Tips
 
 **Order matters** when importing and exporting. For example if you have a collection (A) with a relation to another collection (B), then ensure in the config that collection (B) comes first. This is so when we import, we first import B, then A. Deletions happen afterward in the reverse order.
 
@@ -81,7 +91,15 @@ onImport: async (item, itemsSrv) => {
 },
 ```
 
-### CI Commands
+## Environment Variables
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
+| `SCHEMA_SYNC_CONFIG` | (optional) An additional config file to use in addition, eg. `test_config.js` | `null` |
+
+
+## CI Commands
 
 Besides auto importing and exporting, you can also run the commands manually.
 
@@ -93,14 +111,6 @@ Besides auto importing and exporting, you can also run the commands manually.
 | `import` | Import the schema and data to the Directus API (options: `merge`) |
 | `hash`| Recalculate the hash for all the data files (already happens after export) |
 | `install` | Install the extension's columns in the database and add the config folder (options: `force`) |
-
-### Environment Variables
-
-| Variable | Description | Default |
-| -------- | ----------- | ------- |
-| `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
-| `SCHEMA_SYNC_CONFIG` | An additional config file to use in addition, eg. `test_config.js` | `null` |
-
 
 ## Contributing
 
