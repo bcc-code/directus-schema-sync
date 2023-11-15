@@ -27,7 +27,7 @@ export class ExportManager {
 
   // SECOND: Import if needed
   public async loadAll(merge = false) {
-    await this._loadNextExporter(0);
+    await this._loadNextExporter(0, merge);
   }
 
   protected async _loadNextExporter(i = 0, merge = false) {

@@ -23,7 +23,8 @@
 		"forceConsistentCasingInFileNames": true,
 		"allowSyntheticDefaultImports": true,
 		"isolatedModules": true,
-		"rootDir": "./src"
+		"rootDir": "./src",
+		"outDir": "./dist-test",
 	},
-	"include": ["./src/**/*.ts"]
+	"include": ["src/utils.ts", "src/utils.test.ts"]
 }

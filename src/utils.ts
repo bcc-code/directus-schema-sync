@@ -109,3 +109,21 @@ export function getDiff(newObj: Record<any, any>, oldObj: any) {
 	});
 	return isDifferent ? result : null;
 }
+
+export function sortObject<T extends Record<string, any>>(obj: T): T;
+export function sortObject<T>(obj: T[]): T[];
+export function sortObject<T extends Record<string, any> | T[]>(obj: T): T {
+	if (typeof obj !== 'object' || obj === null) {
+			return obj;
+	}
+
+	if (Array.isArray(obj)) {
+			return obj.map(sortObject) as unknown as T;
+	}
+
+	const sortedObj: Record<string, any> = {};
+	Object.keys(obj).sort().forEach(key => {
+			sortedObj[key] = sortObject((obj as Record<string, any>)[key]);
+	});
+	return sortedObj as T;
+}

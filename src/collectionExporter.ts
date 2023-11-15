@@ -3,7 +3,7 @@ import { ApiExtensionContext, Item, PrimaryKey, Query } from '@directus/types';
 import { readFile, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
 import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, JSONString } from './types';
-import { ExportHelper, getDiff } from './utils.js';
+import { ExportHelper, getDiff, sortObject } from './utils.js';
 
 const DEFAULT_COLLECTION_EXPORTER_OPTIONS: CollectionExporterOptions = {
 	excludeFields: [],
@@ -109,7 +109,7 @@ class CollectionExporter implements IExporter {
 		const itemsSvc = await this._getService();
 		const { query } = await this.settings();
 
-		const items = await itemsSvc.readByQuery(query);
+		let items = await itemsSvc.readByQuery(query);
 		if (!items.length) return '';
 
 		if (this.options.onExport) {
@@ -118,10 +118,11 @@ class CollectionExporter implements IExporter {
 				const alteredItem = await this.options.onExport(item, itemsSvc);
 				if (alteredItem) alteredItems.push(alteredItem);
 			}
-			return JSON.stringify(alteredItems, null, 2);
-		} else {
-			return JSON.stringify(items, null, 2);
-		}
+			
+			items = alteredItems;
+		}		
+		
+		return JSON.stringify(sortObject(items), null, 2);
 	}
 
 	public async loadJSON(json: JSONString | null, merge = false) {

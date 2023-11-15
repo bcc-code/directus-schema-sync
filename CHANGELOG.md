@@ -1,4 +1,11 @@
-# Version 1.4.2
+# Version 1.5.0 ⚠️
+
+  - **Sorts exported object keys**
+    - Fixes issue where the order of the exported object keys would change between exports, causing unnecessary changes in git.
+  - **merge option fixed**
+    - The merge option was introduced in version 1.3.0, but it was not working as intended. This has now been fixed.
+
+## Version 1.4.2
 
   - Add `import-schema` and `export-schema` commands to import/export only the schema.
 

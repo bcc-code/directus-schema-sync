@@ -2,7 +2,7 @@
 	"name": "directus-extension-schema-sync",
 	"description": "Sync schema and data betwreen Directus instances",
 	"icon": "sync_alt",
-	"version": "1.4.2",
+	"version": "1.5.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/bcc-code/directus-schema-sync.git"
@@ -29,11 +29,14 @@
 	"scripts": {
 		"build": "directus-extension build",
 		"dev": "directus-extension build -w --no-minify",
-		"link": "directus-extension link"
+		"link": "directus-extension link",
+		"pre-test": "tsc -p tsconfig.test.json",
+		"test": "npm run pre-test && node --test dist-test/"
 	},
 	"devDependencies": {
 		"@directus/extensions-sdk": "10.1.11",
 		"@directus/types": "^10.1.6",
+		"@types/keyv": "^4.2.0",
 		"@types/node": "^20.8.7",
 		"typescript": "^5.2.2"
 	}
