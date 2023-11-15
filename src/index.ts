@@ -107,11 +107,37 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
     const dbCommand = program.command('schema-sync');
 
     dbCommand
+      .command('export-schema')
+      .description('Export only the schema file')
+      .action(async () => {
+        logger.info('Exporting schema...');
+        const exportSchema = new SchemaExporter(getSchemaService, logger);
+        await exportSchema.export();
+
+        await updateMeta();
+
+        logger.info('Done!');
+        process.exit(0);
+      });
+
+    dbCommand
+      .command('import-schema')
+      .description('Import only the schema file')
+      .action(async () => {
+        logger.info('Importing schema...');
+        const exportSchema = new SchemaExporter(getSchemaService, logger);
+        await exportSchema.load();
+
+        logger.info('Done!');
+        process.exit(0);
+      });
+
+    dbCommand
       .command('install')
       .description('Ensures the DB is ready for schema sync, and creates the schema-sync config folder')
       .option('--force', 'Override schema-sync config folder')
       .action(async ({ force }: { force: boolean }) => {
-        console.log('Installing Schema sync...');
+        logger.info('Installing Schema sync...');
         await updateManager.ensureInstalled();
         await copyConfig(force);
 
@@ -130,7 +156,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
     dbCommand
       .command('import')
-      .description('Import all the available data from file to DB.')
+      .description('Import the schema and all available data from file to DB.')
       .option('--merge', 'Only upsert data and not delete')
       .action(async ({ merge }: { merge: boolean }) => {
         try {
@@ -148,7 +174,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
     dbCommand
       .command('export')
-      .description('Export all data as configured from DB to file')
+      .description('Export the schema and all data as configured from DB to file')
       .action(async () => {
         try {
           logger.info(`Exporting everything to: ${ExportHelper.dataDir}`);

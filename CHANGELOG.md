@@ -1,4 +1,8 @@
-# Version 1.4.1
+# Version 1.4.2
+
+  - Add `import-schema` and `export-schema` commands to import/export only the schema.
+
+## Version 1.4.1
 
   - Fixed config for `directus_presets` getKey should be `${o.role ?? 'all'}-${o.collection}-${o.bookmark || 'default'}` instead of `${o.role ?? 'all'}-${o.collection}-${o.name || 'default'}`
 
