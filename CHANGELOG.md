@@ -1,6 +1,7 @@
-# Version 1.6.0
+# Version 1.6.1
 
  - Fixed error thrown when installing config folder without --force
+ - Fixed installing of config folder
 
 ## Version 1.5.0 ⚠️
 

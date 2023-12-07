@@ -139,7 +139,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
       .action(async ({ force }: { force: boolean }) => {
         logger.info('Installing Schema sync...');
         await updateManager.ensureInstalled();
-        await copyConfig(force);
+        await copyConfig(force, { logger });
 
         logger.info('Done!');
         process.exit(0);
