@@ -7,11 +7,13 @@ export async function copyConfig(force: boolean) {
   const srcDir = path.resolve(__dirname, 'install');
   const targetDir = process.cwd();
 
-  // Test if it doesn't already exist then if it does show a warning with 3s before continuing
+  // Test if it doesn't already exist then if it does exit
   if (!force) {
     await fs.access(path.resolve(targetDir, 'schema-sync')).then(() => {
       console.log('Config folder already exists, use --force to override');
       process.exit(0);
+    }).catch(() => {
+      console.log('Config folder not found. Installing...');
     });
   }
 
