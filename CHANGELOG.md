@@ -1,4 +1,8 @@
-# Version 1.5.0 ⚠️
+# Version 1.6.0
+
+ - Fixed error thrown when installing config folder without --force
+
+## Version 1.5.0 ⚠️
 
   - **Sorts exported object keys**
     - Fixes issue where the order of the exported object keys would change between exports, causing unnecessary changes in git.

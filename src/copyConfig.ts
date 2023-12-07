@@ -13,7 +13,7 @@ export async function copyConfig(force: boolean) {
       console.log('Config folder already exists, use --force to override');
       process.exit(0);
     }).catch(() => {
-      console.log('Config folder not found. Installing...');
+      console.log('Creating config folder...');
     });
   }
 
