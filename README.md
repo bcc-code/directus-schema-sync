@@ -37,7 +37,7 @@ During local development, add the `schema-sync` folder as volumn to the `docker-
 
 ```yaml
 volumes:
-	- ./schema-sync:/directus/extensions/schema-sync
+	- ./schema-sync:/directus/schema-sync
 ```
 
 Upon first time running the container, run the following command to install the extension's columns in the database and add the config folder. (Replace the first `directus` with the name of your container if it is different)
