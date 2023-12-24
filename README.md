@@ -44,7 +44,7 @@ Upon first time running the container, run the following command to install the 
 
 ```bash
 // docker exec -it <container> <command>
-docker-compose exec directus npx directus schema-sync install
+docker-compose exec -it directus npx directus schema-sync install
 ```
 
 ## via NPM (Assuming you are running Directus via NPM)
