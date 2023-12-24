@@ -40,9 +40,10 @@ volumes:
 	- ./schema-sync:/directus/schema-sync
 ```
 
-Upon first time running the container, run the following command to install the extension's columns in the database and add the config folder. (Replace the first `directus` with the name of your container if it is different)
+Upon first time running the container, run the following command to install the extension's columns in the database and add the config folder. (Replace the first `directus` with the name of your service running directus if it is different)
 
 ```bash
+// docker exec -it <container> <command>
 docker-compose exec directus npx directus schema-sync install
 ```
 
