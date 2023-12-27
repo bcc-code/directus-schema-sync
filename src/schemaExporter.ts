@@ -35,12 +35,6 @@ export class SchemaExporter implements IExporter {
 					this.logger.debug('Schema is already up-to-date');
 					return;
 				}
-				targetSnapshot.fields
-					.filter( (field: any) => field.schema?.default_value=="nextval('"+field.schema?.table+"_"+field.schema?.name+"_seq'::regclass)" )
-					.forEach( (field: any) => {
-						field.schema.default_value = null;
-						field.schema.has_auto_increment = true;
-					});
 				const diff = await svc.diff(targetSnapshot, { currentSnapshot, force: true });
 				if (diff !== null) {
 					await svc.apply({ diff, hash: currentHash });
@@ -52,6 +46,12 @@ export class SchemaExporter implements IExporter {
 	private createAndSaveSnapshot = async () => {
 		const svc = this._getSchemaService();
 		let snapshot = await svc.snapshot();
+		snapshot.fields
+			.filter( (field: any) => field.schema?.default_value=="nextval('"+field.schema?.table+"_"+field.schema?.name+"_seq'::regclass)" )
+			.forEach( (field: any) => {
+				field.schema.default_value = null;
+				field.schema.has_auto_increment = true;
+			});
 		let hash = svc.getHashedSnapshot(snapshot).hash;
 		let json = JSON.stringify({ snapshot, hash }, null, 2);
 		await writeFile(this._filePath, json);
