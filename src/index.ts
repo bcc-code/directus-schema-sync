@@ -95,6 +95,10 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
         await updateManager.commitUpdates();
         clearAdminSchema();
+      } catch (e) {
+        logger.error(e);
+        logger.info('Releasing lock...');
+        await updateManager.releaseLock();
       } finally {
         await attachExporters();
       }

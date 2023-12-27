@@ -38,7 +38,8 @@ export class ExportManager {
       await this._loadNextExporter(i + 1, merge);
       if (finishUp) await finishUp();
     } catch (e) {
-      this.logger.error(e);
+      this.logger.error(`Failed loading "${this.exporters[i]!.exporter.name}".`);
+      throw e;
     }
   }
 
