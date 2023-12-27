@@ -35,6 +35,12 @@ export class SchemaExporter implements IExporter {
 					this.logger.debug('Schema is already up-to-date');
 					return;
 				}
+				targetSnapshot.fields
+					.filter( (field: any) => field.schema?.default_value=="nextval('"+field.schema?.table+"_"+field.schema?.name+"_seq'::regclass)" )
+					.forEach( (field: any) => {
+						field.schema.default_value = null;
+						field.schema.has_auto_increment = true;
+					});
 				const diff = await svc.diff(targetSnapshot, { currentSnapshot, force: true });
 				if (diff !== null) {
 					await svc.apply({ diff, hash: currentHash });
