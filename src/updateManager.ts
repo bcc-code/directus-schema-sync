@@ -43,9 +43,6 @@ export class UpdateManager {
       if (rows.length) {
         await trx(this.tableName).where('id', this.rowId).update({
           mv_locked: true,
-          // We set this to newer than isoTS, while we do the migration
-          // If the migration fails, we can reset the lock
-          mv_ts: ExportHelper.utcTS(),
         });
         this._locked = {
           hash: newHash,
@@ -67,6 +64,17 @@ export class UpdateManager {
     await this.db(this.tableName).where('id', this.rowId).update({
       mv_hash: this._locked.hash,
       mv_ts: this._locked.ts,
+      mv_locked: false,
+    });
+
+    this._locked = false;
+    return true;
+  }
+
+  public async releaseLock() {
+    if (!this._locked) return false;
+
+    await this.db(this.tableName).where('id', this.rowId).update({
       mv_locked: false,
     });
 
