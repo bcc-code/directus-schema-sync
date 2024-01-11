@@ -22,37 +22,52 @@ Upon installing configure what data you wish to export from the DB and be able t
 
 # Install
 
+Depending on how you already are using Directus you can either install this plugin using a custom Docker image, or npm.
+
+---
+
 ## via Docker
 
 If you don't already have a Dockerfile, you can use the following [instructions to get started.](https://docs.directus.io/extensions/installing-extensions.html)
+
+Create a folder called `schema-sync` on root. This will soon contain the config and data files for what you want to import and export.
 
 Update your Dockerfile to include the following:
 
 ```dockerfile
 RUN pnpm install directus-extension-schema-sync
+# This is for when building for production
 COPY ./schema-sync ./schema-sync
 ```
 
-During local development, add the `schema-sync` folder as volumn to the `docker-compose` file.
-
+In your `docker-compose` file we need to add the `schema-sync` so that we can commit it to git, and so you can edit/change the config files and have it in sync with the docker container
 ```yaml
+// docker-compose.yaml
 volumes:
 	- ./schema-sync:/directus/schema-sync
 ```
 
-Upon first time running the container, run the following command to install the extension's columns in the database and add the config folder. (Replace the first `directus` with the name of your service running directus if it is different)
+(re)Build and run your container.
+
+Once it is running, run the following command (from host) to install the extension's columns in the database and add the config folder.
+	
+ 	Replace the `my-directus` with the name of your service running directus if it is different
 
 ```bash
 // docker exec -it <container> <command>
-docker-compose exec -it directus npx directus schema-sync install
+docker-compose exec -it my-directus npx directus schema-sync install --force
 ```
+
+	We are using force since we do want to replace the `schema-sync` folder already added as a volumn
+
+---
 
 ## via NPM (Assuming you are running Directus via NPM)
 
  1. `npm install directus-extension-schema-sync`
  2. Then run `directus schema-sync install` to install the extension's columns in the database and add the config folder
- 3. Edit the `config.js` in the schema directory and add your collections you want to sync
- 4. Finally run `directus schema-sync export` to export the schema and data from the Directus API
+ 4. Edit the `config.js` in the schema directory and add your collections you want to sync
+ 5. Finally run `directus schema-sync export` to export the schema and data from the Directus API
 
 In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
 
