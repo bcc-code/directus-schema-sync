@@ -31,7 +31,13 @@ export type CollectionExporterOptions = {
 	query?: Pick<Query, 'filter'|'sort'|'limit'>;
 	prefix?: string;
 	onExport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
-	onImport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
+	onImport?: (item: Item, srv: ItemsService, opts?: ItemImportOptions) => Promise<Item | null>;
+}
+
+export type ItemImportOptions = {
+	forceUpdate?: boolean;
+	skipCreate?: boolean;
+	afterAction?: () => Promise<null>;
 }
 
 //

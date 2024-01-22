@@ -2,7 +2,7 @@
 import { ApiExtensionContext, Item, PrimaryKey, Query } from '@directus/types';
 import { readFile, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
-import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, JSONString } from './types';
+import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemImportOptions, ItemsService, JSONString } from './types';
 import { ExportHelper, getDiff, sortObject } from './utils.js';
 
 const DEFAULT_COLLECTION_EXPORTER_OPTIONS: CollectionExporterOptions = {
@@ -151,11 +151,14 @@ class CollectionExporter implements IExporter {
 		// Find differences
 		const toUpdate: Record<PrimaryKey, Item> = {};
 		const toInsert: Array<Item> = [];
+		const afterActions: any[] = [];
 		const duplicateProcessed = new Set<PrimaryKey>();
 
 		for (let lr of loadedItems) {
+			const opts: ItemImportOptions = {};
+
 			if (this.options.onImport) {
-				lr = await this.options.onImport(lr, itemsSvc) as Item;
+				lr = await this.options.onImport(lr, itemsSvc, opts) as Item;
 				if (!lr) continue;
 			}
 			
@@ -173,8 +176,11 @@ class CollectionExporter implements IExporter {
 					toUpdate[getPrimary(existing)] = diff;
 				}
 			} else {
-				toInsert.push(lr);
+				if (!opts.skipCreate) toInsert.push(lr);
 			}
+
+			if (opts.forceUpdate && !toUpdate[getPrimary(lr)]) toUpdate[getPrimary(lr)] = lr;
+			if (opts.afterAction) afterActions.push(opts.afterAction);
 
 			duplicateProcessed.add(lrKey);
 		}
@@ -193,6 +199,8 @@ class CollectionExporter implements IExporter {
 				await itemsSvc.updateOne(id, diff);
 			}
 		}
+
+		afterActions.forEach((func)=>func());
 
 		const finishUp = async () => {
 			if (!merge) {
