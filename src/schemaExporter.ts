@@ -3,6 +3,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
 import type { IExporter } from './types';
 import { ExportHelper } from './utils.js';
+import { exportHook } from './vendorSpecific.js'
 
 export class SchemaExporter implements IExporter {
 	private _filePath: string;
@@ -46,6 +47,7 @@ export class SchemaExporter implements IExporter {
 	private createAndSaveSnapshot = async () => {
 		const svc = this._getSchemaService();
 		let snapshot = await svc.snapshot();
+		snapshot = exportHook(snapshot);
 		let hash = svc.getHashedSnapshot(snapshot).hash;
 		let json = JSON.stringify({ snapshot, hash }, null, 2);
 		await writeFile(this._filePath, json);
