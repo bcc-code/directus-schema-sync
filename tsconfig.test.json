@@ -26,5 +26,5 @@
 		"rootDir": "./src",
 		"outDir": "./dist-test",
 	},
-	"include": ["src/utils.ts", "src/utils.test.ts"]
+	"include": ["src/utils.ts", "src/utils.test.ts", "src/dialects/postgres/utils.ts", "src/dialects/postgres/utils.test.ts"]
 }

@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
 import type { IExporter } from './types';
 import { ExportHelper } from './utils.js';
-import { exportHook } from './vendorSpecific.js'
+import { exportHook } from './schemaExporterHooks.js'
 
 export class SchemaExporter implements IExporter {
 	private _filePath: string;
