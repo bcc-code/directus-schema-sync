@@ -1,4 +1,8 @@
-# Version 1.6.1
+# Version 1.6.2
+
+  - (postgres only) Fixed import issue due to default_value containing functions for auto increment
+
+## Version 1.6.1
 
  - Fixed error thrown when installing config folder without --force
  - Fixed installing of config folder
