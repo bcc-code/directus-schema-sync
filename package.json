@@ -34,7 +34,7 @@
 		"test": "npm run pre-test && node --test dist-test/"
 	},
 	"devDependencies": {
-		"@directus/extensions-sdk": "10.1.11",
+		"@directus/extensions-sdk": "10.3.0",
 		"@directus/types": "^10.1.6",
 		"@types/keyv": "^4.2.0",
 		"@types/node": "^20.8.7",
