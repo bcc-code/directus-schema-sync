@@ -14,10 +14,4 @@ export function exportHook<T extends Record<string, any>>(snapshot: T) {
 
 type modifiersType = Record<string, snapshotFunctionType[]>
 
-type snapshotWithHashType = {
-    snapshot: Record<string, any>,
-    hash: string
-}
-
-type snapshotWithHashFunctionType = <T extends snapshotWithHashType>(snapshotWithHash: T) => T
 type snapshotFunctionType = <T extends Record<string, any>>(snapshotWithHash: T) => T
