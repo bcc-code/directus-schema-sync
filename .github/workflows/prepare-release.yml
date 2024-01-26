@@ -1,0 +1,38 @@
+name: "Prepare release"
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CI: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    permissions:
+      contents: write  # for softprops/action-gh-release to create GitHub release
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: git fetch --tags -f
+
+      - name: Resolve version
+        id: vars
+        run: |
+          echo "TAG_NAME=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          name: "schema-sync ${{ env.TAG_NAME }}"
+          tag_name: ${{ env.TAG_NAME }}
+          generate_release_notes: true

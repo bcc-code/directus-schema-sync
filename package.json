@@ -31,7 +31,8 @@
 		"dev": "directus-extension build -w --no-minify",
 		"link": "directus-extension link",
 		"pre-test": "tsc -p tsconfig.test.json",
-		"test": "npm run pre-test && node --test dist-test/"
+		"test": "npm run pre-test && node --test dist-test/",
+		"create-version": "node ./scripts/version.cjs"
 	},
 	"devDependencies": {
 		"@directus/extensions-sdk": "10.1.11",

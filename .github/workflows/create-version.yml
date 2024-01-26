@@ -1,0 +1,53 @@
+name: Create New Version
+run-name: Creating new ${{ github.event.inputs.version }} ${{ github.event.inputs.channel }} version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+        default: minor
+      channel:
+          description: Channel
+          type: choice
+          options:
+            - release
+            - beta
+          default: release
+
+env:
+  CI: true
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.BCC_BOT_ACCESS_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Set commit author to bcc-bot
+        run: |
+          git config --global user.name "bcc-bot"
+          git config --global user.email "84040471+bcc-bot@users.noreply.github.com"
+    
+      - name: Version new ${{ github.event.inputs.version }} version
+        run: npm run create-version -- ${{ github.event.inputs.version }} ${{ github.event.inputs.channel }}
+
+      - name: Push
+        run: git push --follow-tags
