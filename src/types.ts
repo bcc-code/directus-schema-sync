@@ -27,6 +27,7 @@ export type ExportCollectionConfig = Record<
 
 export type CollectionExporterOptions = {
 	excludeFields?: string[];
+	linkedFields?: string[];
 	getKey?: (o: Item) => PrimaryKey;
 	query?: Pick<Query, 'filter'|'sort'|'limit'>;
 	prefix?: string;

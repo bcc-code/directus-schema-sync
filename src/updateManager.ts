@@ -36,7 +36,7 @@ export class UpdateManager {
         // Only need to migrate if hash is different
         .andWhereNot('mv_hash', newHash)
         // And only if the previous hash is older than the current one
-        .andWhere('mv_ts', '<', isoTS)
+        .andWhere('mv_ts', '<', isoTS).orWhereNull('mv_ts')
         .forUpdate(); // This locks the row
 
       // If row is found, lock it

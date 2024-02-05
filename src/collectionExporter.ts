@@ -64,7 +64,18 @@ class CollectionExporter implements IExporter {
 		await writeFile(this.filePath, json);
 	}
 
+	protected _settings: {
+		inclFields: Array<string>;
+		exclFields: Array<string>;
+		linkedFields: NonNullable<CollectionExporterOptions['linkedFields']>
+		getKey: (o: Item) => PrimaryKey;
+		getPrimary: (o: Item) => PrimaryKey;
+		query: Query;
+		queryWithPrimary: Query;
+	} | null = null;
 	protected async settings() {
+		if (this._settings) return this._settings;
+
 		const itemsSvc = await this._getService()
 		const schema = itemsSvc.schema.collections[this.collection]
 		
@@ -95,9 +106,10 @@ class CollectionExporter implements IExporter {
 
 		const queryWithPrimary: Query = exclFields.includes(schema.primary) ? { ...query, fields: [...inclFields, schema.primary] } : query;
 		
-		return {
+		return this._settings = {
 			inclFields,
 			exclFields,
+			linkedFields: this.options.linkedFields || [],
 			getKey,
 			getPrimary,
 			query,
@@ -123,6 +135,46 @@ class CollectionExporter implements IExporter {
 		}		
 		
 		return JSON.stringify(sortObject(items), null, 2);
+	}
+
+
+	/**
+	 * Orders items so that items that are linked are inserted after the items they reference
+	 * Only works with items that have a primary key
+	 * Assumes items not in given items list are already in the database
+	 * @param items 
+	 * @returns 
+	 */
+	protected async sortbyIfLinked(items: Array<Item>) {
+		const { getPrimary, linkedFields } = await this.settings();
+		if (!linkedFields.length) return false;
+
+		const itemsMap = items.reduce((map, o) => {
+			o.__dependents = [];
+			map[getPrimary(o)] = o;
+			return map;
+		}, {} as Record<PrimaryKey, Item>);
+
+		let hasDependents = false;
+		items.forEach(o => {
+			for (const fieldName of linkedFields) {
+				const value = o[fieldName];
+				if (value && itemsMap[value]) {
+					hasDependents = true;
+					itemsMap[value].__dependents.push(o);
+				}
+			}
+		});
+		
+		items.sort((a, b) => this.countDependents(b) - this.countDependents(a));
+		items.forEach(o => delete o.__dependents);
+
+		return true;
+	}
+	// Recursively count dependents
+	private countDependents(o: any): number {
+		if (!o.__dependents.length) return 0;
+		return o.__dependents.reduce((acc, o) => acc + this.countDependents(o), o.__dependents.length);
 	}
 
 	public async loadJSON(json: JSONString | null, merge = false) {
@@ -182,7 +234,13 @@ class CollectionExporter implements IExporter {
 		// Insert
 		if (toInsert.length > 0) {
 			this.logger.debug(`Inserting ${toInsert.length} x ${this.collection} items`);
-			await itemsSvc.createMany(toInsert);
+			if (await this.sortbyIfLinked(toInsert)) {
+				for (const item of toInsert) {
+					await itemsSvc.createOne(item);
+				}
+			} else {
+				await itemsSvc.createMany(toInsert);
+			}
 		}
 
 		// Update

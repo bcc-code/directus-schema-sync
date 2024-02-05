@@ -1,4 +1,24 @@
-# Version 1.6.2
+# Version 1.6.3
+
+  - Add `linkedFields` to fix inserting ordered items that might depend on each other.
+    - Specifically fixes importing of flow operations, update the directus_config and add `linkedFields`.
+    ```javascript
+    {
+      directus_operations: {
+        watch: ['operations'],
+        excludeFields: ['user_created'],
+        linkedFields: ['resolve', 'reject'],
+        query: {
+          filter: {
+            flow: { trigger: { _neq: 'webhook' } },
+          },
+        },
+      },
+    }
+    ```
+  - Also fix auto IMPORT issue when mv_ts is null.
+
+## Version 1.6.2
 
   - (postgres only) Fixed import issue due to default_value containing functions for auto increment
 

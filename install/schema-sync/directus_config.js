@@ -66,6 +66,7 @@ export const syncDirectusCollections = {
 	directus_operations: {
 		watch: ['operations'],
 		excludeFields: ['user_created'],
+		linkedFields: ['resolve', 'reject'],
 		query: {
 			filter: {
 				flow: { trigger: { _neq: 'webhook' } },

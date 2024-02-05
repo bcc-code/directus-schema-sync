@@ -70,6 +70,7 @@ export const syncDirectusCollections: ExportCollectionConfig = {
 	directus_operations: {
 		watch: ['operations'],
 		excludeFields: ['user_created'],
+		linkedFields: ['resolve', 'reject'],
 	},
 	directus_translations: {
 		watch: ['translations'],
