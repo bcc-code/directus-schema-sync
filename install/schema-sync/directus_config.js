@@ -16,6 +16,7 @@ export const syncDirectusCollections = {
 	directus_folders: {
 		watch: ['folders'],
 		excludeFields: [],
+		linkedFields: ['parent'],
 		query: {
 			sort: ['parent', 'id'],
 		},
