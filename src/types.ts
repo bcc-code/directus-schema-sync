@@ -35,6 +35,35 @@ export type CollectionExporterOptions = {
 	onImport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
 }
 
+export type SchemaModifiersType = {
+	export: Record<string, SchemaModifierFunctionType[]>,
+	import: Record<string, SchemaModifierFunctionType[]>,
+	diffModif: Record<string, DiffModifierFunctionType[]>
+}
+export type SchemaModifierContextType = {
+    snapshot: Record<string, any>,
+	hash?: string,
+    svc: Record<string, any>
+}
+
+type diffType = {
+	kind: 'N' | 'D' | 'E' | 'A',
+	lhs?: any,
+	rhs?: any,
+	path?: any[],
+	index?: number,
+    item?: diffType
+}
+
+export type DiffModifierContextType = {
+	diff: SnapshotDiff,
+	vendor: string,
+	svc: any
+}
+
+export type SchemaModifierFunctionType = <T extends SchemaModifierContextType>(context: T) => T
+export type DiffModifierFunctionType = <T extends DiffModifierContextType>(context: T) => Promise<T>
+
 //
 // Defining used Directus types here in order to get type hinting without installing entire Directus
 //
@@ -65,3 +94,21 @@ export interface ItemsService {
 	deleteMany(keys: PrimaryKey[], opts?: MutationOptions): Promise<PrimaryKey[]>;
 	deleteByQuery(query: any, opts?: MutationOptions): Promise<PrimaryKey[]>;
 }
+
+export type SnapshotDiff = {
+    collections: {
+        collection: string;
+        diff: diffType[];
+    }[];
+    fields: {
+        collection: string;
+        field: string;
+        diff: diffType[];
+    }[];
+    relations: {
+        collection: string;
+        field: string;
+        related_collection: string | null;
+        diff: diffType[];
+    }[];
+};

@@ -1,17 +1,41 @@
-import * as pgUtils from './dialects/postgres/utils.js';
+import type { SchemaModifiersType, SchemaModifierContextType, DiffModifierContextType } from './types.js';
+import * as modifierUtils from './dialects/all/utils.js';
 
-const modifiers: modifiersType = {
-    postgres: [pgUtils.sequenceToSerialType]
+const modifiers: SchemaModifiersType = {
+    export: {
+        postgres: [modifierUtils.postgres.CorrectHasAutoIncrement]
+    },
+    import: {
+        postgres: [modifierUtils.postgres.CorrectHasAutoIncrement]
+    },
+    diffModif: {
+        postgres: [modifierUtils.postgres.ProcessNextvalDefaultValues]
+    }
 }
 
-export function exportHook<T extends Record<string, any>>(snapshot: T) {
-    if (modifiers[snapshot.vendor]?.length)
-        return modifiers[snapshot.vendor]!.reduce((_snapshot, modifier) => {
-            return modifier(_snapshot);
-        }, snapshot)
-    return snapshot;
+export function exportHook<T extends SchemaModifierContextType>(context: T): T['snapshot'] {
+    if (modifiers.export[context.snapshot.vendor]?.length)
+        return modifiers.export[context.snapshot.vendor]!.reduce((_context, modifier) => {
+            return modifier(_context);
+        }, context).snapshot;
+    return context.snapshot;
 };
 
-type modifiersType = Record<string, snapshotFunctionType[]>
+export function importHook<T extends SchemaModifierContextType>(context: T): T {
+    if (modifiers.import[context.snapshot.vendor]?.length)
+        return modifiers.import[context.snapshot.vendor]!.reduce((_context, modifier) => {
+            return modifier(_context);
+        }, context);
+    return context;
+};
 
-type snapshotFunctionType = <T extends Record<string, any>>(snapshotWithHash: T) => T
+export async function diffHook<T extends DiffModifierContextType>(context: T): Promise<T['diff']> {
+    if (modifiers.diffModif[context.vendor]?.length){
+        let modifiedContext = context;
+        for (const modifier of modifiers.diffModif[context.vendor]!) {
+            modifiedContext = await modifier(modifiedContext);
+        }
+        return modifiedContext.diff;
+    }
+    return context.diff;
+};

@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
 import type { IExporter } from './types';
 import { ExportHelper } from './utils.js';
-import { exportHook } from './schemaExporterHooks.js'
+import { exportHook, importHook, diffHook } from './schemaExporterHooks.js'
 
 export class SchemaExporter implements IExporter {
 	private _filePath: string;
@@ -27,7 +27,8 @@ export class SchemaExporter implements IExporter {
 		if (await ExportHelper.fileExists(this._filePath)) {
 			const json = await readFile(this._filePath, { encoding: 'utf8' });
 			if (json) {
-				const targetSnapshotWithHash = JSON.parse(json);
+				let targetSnapshotWithHash = JSON.parse(json);
+				targetSnapshotWithHash = importHook({...targetSnapshotWithHash, svc});
 				const targetSnapshot = targetSnapshotWithHash.snapshot;
 				const targetHash = targetSnapshotWithHash.hash;
 				const currentSnapshot = await svc.snapshot();
@@ -36,7 +37,8 @@ export class SchemaExporter implements IExporter {
 					this.logger.debug('Schema is already up-to-date');
 					return;
 				}
-				const diff = await svc.diff(targetSnapshot, { currentSnapshot, force: true });
+				let diff = await svc.diff(targetSnapshot, { currentSnapshot, force: true });
+				diff = await diffHook({diff, vendor: currentSnapshot.vendor, svc});
 				if (diff !== null) {
 					await svc.apply({ diff, hash: currentHash });
 				}
@@ -47,7 +49,7 @@ export class SchemaExporter implements IExporter {
 	private createAndSaveSnapshot = async () => {
 		const svc = this._getSchemaService();
 		let snapshot = await svc.snapshot();
-		snapshot = exportHook(snapshot);
+		snapshot = exportHook({snapshot, svc});
 		let hash = svc.getHashedSnapshot(snapshot).hash;
 		let json = JSON.stringify({ snapshot, hash }, null, 2);
 		await writeFile(this._filePath, json);
