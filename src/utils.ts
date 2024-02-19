@@ -127,3 +127,9 @@ export function sortObject<T extends Record<string, any> | T[]>(obj: T): T {
 	});
 	return sortedObj as T;
 }
+
+export let env = {...process.env};
+
+export function setEnv(_env: any) {
+	env = _env;
+}

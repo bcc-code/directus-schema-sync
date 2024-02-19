@@ -1,5 +1,6 @@
 import type { SchemaModifiersType, SchemaModifierContextType, DiffModifierContextType } from './types.js';
 import * as modifierUtils from './dialects/all/utils.js';
+import { env } from './utils.js';
 
 const modifiers: SchemaModifiersType = {
     export: {
@@ -14,7 +15,7 @@ const modifiers: SchemaModifiersType = {
 }
 
 export function exportHook<T extends SchemaModifierContextType>(context: T): T['snapshot'] {
-    if (modifiers.export[context.snapshot.vendor]?.length)
+    if (env.SCHEMA_SYNC_HOOKS_ENABLED && modifiers.export[context.snapshot.vendor]?.length)
         return modifiers.export[context.snapshot.vendor]!.reduce((_context, modifier) => {
             return modifier(_context);
         }, context).snapshot;
@@ -22,7 +23,7 @@ export function exportHook<T extends SchemaModifierContextType>(context: T): T['
 };
 
 export function importHook<T extends SchemaModifierContextType>(context: T): T {
-    if (modifiers.import[context.snapshot.vendor]?.length)
+    if (env.SCHEMA_SYNC_HOOKS_ENABLED && modifiers.import[context.snapshot.vendor]?.length)
         return modifiers.import[context.snapshot.vendor]!.reduce((_context, modifier) => {
             return modifier(_context);
         }, context);
@@ -30,7 +31,7 @@ export function importHook<T extends SchemaModifierContextType>(context: T): T {
 };
 
 export async function diffHook<T extends DiffModifierContextType>(context: T): Promise<T['diff']> {
-    if (modifiers.diffModif[context.vendor]?.length){
+    if (env.SCHEMA_SYNC_HOOKS_ENABLED && modifiers.diffModif[context.vendor]?.length){
         let modifiedContext = context;
         for (const modifier of modifiers.diffModif[context.vendor]!) {
             modifiedContext = await modifier(modifiedContext);

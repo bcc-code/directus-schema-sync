@@ -5,10 +5,11 @@ import { ExportManager } from './exportManager';
 import { SchemaExporter } from './schemaExporter';
 import type { ExportCollectionConfig, IGetItemsService, ItemsService } from './types';
 import { UpdateManager } from './updateManager';
-import { ADMIN_ACCOUNTABILITY, ExportHelper, nodeImport } from './utils';
+import { ADMIN_ACCOUNTABILITY, ExportHelper, nodeImport, setEnv } from './utils';
 
 const registerHook: HookConfig = async ({ action, init }, { env, services, database, getSchema, logger }) => {
   const { SchemaService, ItemsService } = services;
+  setEnv(env);
 
   let schema: SchemaOverview | null;
   const getAdminSchema = async () =>
