@@ -1,7 +1,7 @@
 # Version 1.6.4
 
   - Update hash and timestamp after manually triggering import via cli.
-    - This will also force reset the lock if any errors occured during an earlier import.
+    - This will also force reset the lock if any errors occurred during an earlier import.
 
 ## Version 1.6.3
 
