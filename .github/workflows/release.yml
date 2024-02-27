@@ -12,7 +12,6 @@ env:
 
 jobs:
   build:
-    if: contains(github.event.release.name, 'schema-sync')
     runs-on: ubuntu-latest
 
     steps:
