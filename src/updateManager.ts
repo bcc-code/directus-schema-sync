@@ -71,6 +71,17 @@ export class UpdateManager {
     return true;
   }
 
+  public async forceCommitUpdates(newHash: string, isoTS: string) {
+    await this.db(this.tableName).where('id', this.rowId).update({
+      mv_hash: newHash,
+      mv_ts: isoTS,
+      mv_locked: false,
+    });
+
+    this._locked = false;
+    return true;
+  }
+
   public async releaseLock() {
     if (!this._locked) return false;
 

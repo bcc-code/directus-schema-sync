@@ -86,7 +86,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
     init('app.before', async () => {
       try {
         const meta = await ExportHelper.getExportMeta();
-        if (!meta) return logger.info('Nothing exported yet it seems'); // No export meta, nothing to do
+        if (!meta) return logger.info('Nothing exported yet it seems');
         if (!(await updateManager.lockForUpdates(meta.hash, meta.ts))) return; // Schema is locked / no change, nothing to do
 
         logger.info(`Updating schema and data with hash: ${meta.hash}`);
@@ -129,9 +129,13 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
       .description('Import only the schema file')
       .action(async () => {
         logger.info('Importing schema...');
+        const meta = await ExportHelper.getExportMeta();
+        if (!meta) return logger.info('Nothing exported yet it seems'); 
+
         const exportSchema = new SchemaExporter(getSchemaService, logger);
         await exportSchema.load();
 
+        await updateManager.forceCommitUpdates(meta.hash, meta.ts);
         logger.info('Done!');
         process.exit(0);
       });
