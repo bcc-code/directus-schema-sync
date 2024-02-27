@@ -1,4 +1,9 @@
-# Version 1.6.3
+# Version 1.6.4
+
+  - Update hash and timestamp after manually triggering import via cli.
+    - This will also force reset the lock if any errors occured during an earlier import.
+
+## Version 1.6.3
 
   - Add `linkedFields` to fix inserting ordered items that might depend on each other.
     - Specifically fixes importing of flow operations, update the directus_config and add `linkedFields`.
