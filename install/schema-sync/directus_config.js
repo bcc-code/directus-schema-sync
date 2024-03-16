@@ -12,6 +12,12 @@
 export const syncDirectusCollections = {
 	directus_roles: {
 		watch: ['roles'],
+    		excludeFields: ['users'],
+    		query: {
+			filter: {
+				name: { _neq: 'Administrator' },
+			},
+		},
 	},
 	directus_folders: {
 		watch: ['folders'],
