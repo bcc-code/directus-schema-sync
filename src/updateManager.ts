@@ -30,28 +30,38 @@ export class UpdateManager {
 
     const succeeded = await this.db.transaction(async trx => {
       const rows = await trx(this.tableName)
-        .select('*')
-        .where('id', this.rowId)
-        .where('mv_locked', false)
-        // Only need to migrate if hash is different
-        .andWhereNot('mv_hash', newHash)
-        // And only if the previous hash is older than the current one
-        .andWhere('mv_ts', '<', isoTS).orWhereNull('mv_ts')
-        .forUpdate(); // This locks the row
+        .select(['id', 'mv_locked', 'mv_hash', 'mv_ts']).forUpdate()
 
-      // If row is found, lock it
+      // If rows is found, filter them
       if (rows.length) {
-        await trx(this.tableName).where('id', this.rowId).update({
-          mv_locked: true,
+        const filteredRows = rows.filter(row => {
+          return (
+              row.id === this.rowId &&
+              row.mv_locked === false &&
+              (row.mv_hash !== newHash || !row.mv_ts || row.mv_ts < isoTS)
+          );
         });
-        this._locked = {
-          hash: newHash,
-          ts: isoTS,
-        };
-        return true;
+        // If row is found, lock it
+        if (filteredRows.length){
+          await trx(this.tableName).where('id', this.rowId).update({
+            mv_locked: true,
+          });
+          this._locked = {
+            hash: newHash,
+            ts: isoTS,
+          };
+          return true;
+        }
+        return false
       }
-
-      return false;
+      // If no row is found (CI), create it
+      await trx(this.tableName)
+        .insert({ mv_locked: true })
+      this._locked = {
+        hash: newHash,
+        ts: isoTS,
+      };
+      return true;
     });
 
     this._locking = false;
