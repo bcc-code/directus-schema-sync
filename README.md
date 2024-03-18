@@ -113,6 +113,7 @@ onImport: async (item, itemsSrv) => {
 | -------- | ----------- | ------- |
 | `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
 | `SCHEMA_SYNC_CONFIG` | (optional) An additional config file to use in addition, eg. `test_config.js` | `null` |
+| `SCHEMA_SYNC_AUTO_INSTALL` | (optional) Set to *true* to enable the automatic installation of schema sync for use in CI environments | `null` |
 
 
 ## CI Commands
