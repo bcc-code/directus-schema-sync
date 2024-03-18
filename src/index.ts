@@ -81,6 +81,12 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
     }
   }
 
+  const unattendedInstall = async () => {
+    await updateManager.ensureInstalled();
+    await copyConfig(false, false, { logger });
+    logger.info("Auto schema sync installation successful.");
+  }
+  
   // LOAD EXPORTED SCHEMAS & COLLECTIONS
   if (env.SCHEMA_SYNC === 'BOTH' || env.SCHEMA_SYNC === 'IMPORT') {
     init('app.before', async () => {
@@ -147,7 +153,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
       .action(async ({ force }: { force: boolean }) => {
         logger.info('Installing Schema sync...');
         await updateManager.ensureInstalled();
-        await copyConfig(force, { logger });
+        await copyConfig(force, true, { logger });
 
         logger.info('Done!');
         process.exit(0);
@@ -198,6 +204,9 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
           process.exit(1);
         }
       });
+
+      if (env.SCHEMA_SYNC_AUTO_INSTALL)
+        await unattendedInstall()
   });
 };
 
