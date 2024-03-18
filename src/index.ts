@@ -85,6 +85,12 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
   if (env.SCHEMA_SYNC === 'BOTH' || env.SCHEMA_SYNC === 'IMPORT') {
     init('app.before', async () => {
       try {
+        if (env.SCHEMA_SYNC_AUTO_INSTALL == "true"){
+          await updateManager.ensureInstalled();
+          await copyConfig(false, false, { logger });
+          logger.info("Auto schema sync installation successful.");
+        }
+
         const meta = await ExportHelper.getExportMeta();
         if (!meta) return logger.info('Nothing exported yet it seems');
         if (!(await updateManager.lockForUpdates(meta.hash, meta.ts))) return; // Schema is locked / no change, nothing to do
@@ -147,7 +153,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
       .action(async ({ force }: { force: boolean }) => {
         logger.info('Installing Schema sync...');
         await updateManager.ensureInstalled();
-        await copyConfig(force, { logger });
+        await copyConfig(force, true, { logger });
 
         logger.info('Done!');
         process.exit(0);
