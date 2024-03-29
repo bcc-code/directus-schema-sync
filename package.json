@@ -36,8 +36,8 @@
 		"release-channel": "node ./scripts/release-channel.js"
 	},
 	"devDependencies": {
-		"@directus/extensions-sdk": "10.1.11",
-		"@directus/types": "^10.1.6",
+		"@directus/extensions-sdk": "10.3.4",
+		"@directus/types": "^11.0.7",
 		"@types/keyv": "^4.2.0",
 		"@types/node": "^20.8.7",
 		"typescript": "^5.2.2"
