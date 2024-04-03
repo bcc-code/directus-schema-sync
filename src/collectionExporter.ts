@@ -191,13 +191,13 @@ class CollectionExporter implements IExporter {
 
 		const itemsMap: Record<PrimaryKey, Item> = {}
 		const duplicatesToDelete: Array<PrimaryKey> = [];
-		items.forEach(o => {
-			if (itemsMap[getKey(o)]) {
-				this.logger.warn(`Will delete duplicate ${this.collection} item found #${getPrimary(o)}`);
-				duplicatesToDelete.push(getPrimary(o));
-			} else {
-				itemsMap[getKey(o)] = o
+		items.forEach(item => {
+			const itemKey = getKey(item);
+			if (itemsMap[itemKey]) {
+				this.logger.warn(`Will delete duplicate ${this.collection} item found #${getPrimary(itemsMap[itemKey])}`);
+				duplicatesToDelete.push(getPrimary(itemsMap[itemKey]));
 			}
+			itemsMap[itemKey] = item;
 		});
 
 		// Find differences
