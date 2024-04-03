@@ -174,7 +174,7 @@ class CollectionExporter implements IExporter {
 	// Recursively count dependents
 	private countDependents(o: any): number {
 		if (!o.__dependents.length) return 0;
-		return o.__dependents.reduce((acc, o) => acc + this.countDependents(o), o.__dependents.length);
+		return (o.__dependents as Array<Item>).reduce((acc, o) => acc + this.countDependents(o), o.__dependents.length);
 	}
 
 	public async loadJSON(json: JSONString | null, merge = false) {
@@ -194,8 +194,8 @@ class CollectionExporter implements IExporter {
 		items.forEach(item => {
 			const itemKey = getKey(item);
 			if (itemsMap[itemKey]) {
-				this.logger.warn(`Will delete duplicate ${this.collection} item found #${getPrimary(itemsMap[itemKey])}`);
-				duplicatesToDelete.push(getPrimary(itemsMap[itemKey]));
+				this.logger.warn(`Will delete duplicate ${this.collection} item found #${getPrimary(itemsMap[itemKey]!)}`);
+				duplicatesToDelete.push(getPrimary(itemsMap[itemKey]!));
 			}
 			itemsMap[itemKey] = item;
 		});
@@ -205,7 +205,8 @@ class CollectionExporter implements IExporter {
 		const toInsert: Array<Item> = [];
 		const duplicateProcessed = new Set<PrimaryKey>();
 
-		for (let lr of loadedItems) {
+		for (let i=loadedItems.length-1; i>=0; i--) {
+			let lr = loadedItems[i]!;
 			if (this.options.onImport) {
 				lr = await this.options.onImport(lr, itemsSvc) as Item;
 				if (!lr) continue;
@@ -230,6 +231,9 @@ class CollectionExporter implements IExporter {
 
 			duplicateProcessed.add(lrKey);
 		}
+
+		// Ensure items are inserted in correct order
+		toInsert.reverse();
 
 		// Insert
 		if (toInsert.length > 0) {
