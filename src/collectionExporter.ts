@@ -206,8 +206,8 @@ class CollectionExporter implements IExporter {
 		const toInsert: Array<Item> = [];
 		const duplicateProcessed = new Set<PrimaryKey>();
 
-		for (let i=loadedItems.length-1; i>=0; i--) {
-			let lr = loadedItems[i]!;
+		loadedItems.reverse();
+		for (let lr of loadedItems) {
 			if (this.options.onImport) {
 				lr = await this.options.onImport(lr, itemsSvc) as Item;
 				if (!lr) continue;
