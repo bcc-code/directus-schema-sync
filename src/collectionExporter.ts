@@ -2,7 +2,7 @@
 import { ApiExtensionContext, Item, PrimaryKey, Query } from '@directus/types';
 import { readFile, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
-import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, JSONString } from './types';
+import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, JSONString, ToUpdateItemDiff } from './types';
 import { ExportHelper, getDiff, sortObject } from './utils.js';
 
 const DEFAULT_COLLECTION_EXPORTER_OPTIONS: CollectionExporterOptions = {
@@ -174,7 +174,7 @@ class CollectionExporter implements IExporter {
 	// Recursively count dependents
 	private countDependents(o: any): number {
 		if (!o.__dependents.length) return 0;
-		return o.__dependents.reduce((acc, o) => acc + this.countDependents(o), o.__dependents.length);
+		return (o.__dependents as Array<Item>).reduce((acc, o) => acc + this.countDependents(o), o.__dependents.length);
 	}
 
 	public async loadJSON(json: JSONString | null, merge = false) {
@@ -189,21 +189,23 @@ class CollectionExporter implements IExporter {
 
 		const items = await itemsSvc.readByQuery(queryWithPrimary);
 
-		const itemsMap: Record<PrimaryKey, Item> = {}
-		const duplicatesToDelete: Array<PrimaryKey> = [];
-		items.forEach(o => {
-			if (itemsMap[getKey(o)]) {
-				this.logger.warn(`Will delete duplicate ${this.collection} item found #${getPrimary(o)}`);
-				duplicatesToDelete.push(getPrimary(o));
-			} else {
-				itemsMap[getKey(o)] = o
+		const itemsMap = new Map<PrimaryKey, Item>();
+		let toDelete: Array<PrimaryKey> = [];
+
+		items.forEach(item => {
+			const itemKey = getKey(item);
+			if (itemsMap.has(itemKey)) {
+				const itemId = getPrimary(itemsMap.get(itemKey)!);
+				this.logger.warn(`Will delete duplicate ${this.collection} item found #${itemId}`);
+				// Delete duplicate
+				toDelete.push(itemId);
 			}
+			itemsMap.set(itemKey, item);
 		});
 
-		// Find differences
-		const toUpdate: Record<PrimaryKey, Item> = {};
-		const toInsert: Array<Item> = [];
-		const duplicateProcessed = new Set<PrimaryKey>();
+		const toUpdate = new Map<PrimaryKey, ToUpdateItemDiff>();
+		const toInsert: Record<PrimaryKey, Item> = {};
+		const toDeleteItems = new Map<PrimaryKey, Item>(itemsMap);
 
 		for (let lr of loadedItems) {
 			if (this.options.onImport) {
@@ -212,50 +214,50 @@ class CollectionExporter implements IExporter {
 			}
 			
 			const lrKey = getKey(lr);
-			if (duplicateProcessed.has(lrKey)) continue;
 
-			const existing = itemsMap[lrKey];
+			const existing = itemsMap.get(lrKey);
 
 			if (existing) {
 				// We delete the item from the map so that we can later check which items were deleted
-				delete itemsMap[lrKey];
+				toDeleteItems.delete(lrKey);
 
 				const diff = getDiff(lr, existing);
 				if (diff) {
-					toUpdate[getPrimary(existing)] = diff;
+					toUpdate.set(lrKey, {
+						pkey: getPrimary(existing),
+						diff
+					});
 				}
 			} else {
-				toInsert.push(lr);
+				toInsert[lrKey] = lr;
 			}
-
-			duplicateProcessed.add(lrKey);
 		}
 
 		// Insert
-		if (toInsert.length > 0) {
-			this.logger.debug(`Inserting ${toInsert.length} x ${this.collection} items`);
-			if (await this.sortbyIfLinked(toInsert)) {
-				for (const item of toInsert) {
+		let toInsertValues = Object.values(toInsert);
+		if (toInsertValues.length > 0) {
+			this.logger.debug(`Inserting ${toInsertValues.length} x ${this.collection} items`);
+			if (await this.sortbyIfLinked(toInsertValues)) {
+				for (const item of toInsertValues) {
 					await itemsSvc.createOne(item);
 				}
 			} else {
-				await itemsSvc.createMany(toInsert);
+				await itemsSvc.createMany(toInsertValues);
 			}
 		}
 
 		// Update
-		const updateEntries = Object.entries(toUpdate);
-		if (updateEntries.length > 0) {
-			this.logger.debug(`Updating ${updateEntries.length} x ${this.collection} items`);
-			for (const [id, diff] of updateEntries) {
-				await itemsSvc.updateOne(id, diff);
+		if (toUpdate.size > 0) {
+			this.logger.debug(`Updating ${toUpdate.size} x ${this.collection} items`);
+			for (const [_key, item] of toUpdate) {
+				await itemsSvc.updateOne(item.pkey, item.diff);
 			}
 		}
 
 		const finishUp = async () => {
 			if (!merge) {
 				// Delete
-				const toDelete: Array<PrimaryKey> = duplicatesToDelete.concat(Object.values(itemsMap).map(getPrimary));
+				toDelete = toDelete.concat(Array.from(toDeleteItems.values(), getPrimary));
 				if (toDelete.length > 0) {
 					this.logger.debug(`Deleting ${toDelete.length} x ${this.collection} items`);
 					await itemsSvc.deleteMany(toDelete);

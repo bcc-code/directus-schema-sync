@@ -35,6 +35,11 @@ export type CollectionExporterOptions = {
 	onImport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
 }
 
+export type ToUpdateItemDiff = {
+	pkey: PrimaryKey
+	diff: any
+}
+
 //
 // Defining used Directus types here in order to get type hinting without installing entire Directus
 //
