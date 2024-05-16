@@ -1,4 +1,21 @@
-# Version 1.6.4
+# Version 2.0.0 ⚠️ Breaking change, due to new feature
+
+**By default will split schema file up into multiple files per collection**
+
+- **Why?** This is to make it easier to manage the schema files in git, as well as to make it easier to work with the schema files in general.
+
+- **How?** The schema files will be split up into multiple files per collection. The main file will be named `schema.json` and will contain a flag stating if it is partial (split). The collection files will be named after the collection name, and will contain the schema for that collection. All collection files will be placed in `schema-sync/data/schema`.
+
+- **What do I need to do?**
+
+  - If you have any custom scripts that rely on the schema file, you will need to update them to work with the new structure.
+  - You will also need to export the schema again to get the new structure.
+  - Add the new schema files to git.
+
+- **What if I don't want this?** You can set `SCHEMA_SYNC_SPLIT=false` in your environment file to disable this feature.
+
+
+## Version 1.6.4
 
   - Update hash and timestamp after manually triggering import via cli.
     - This will also force reset the lock if any errors occurred during an earlier import.

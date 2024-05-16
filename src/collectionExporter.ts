@@ -1,5 +1,6 @@
 
-import { ApiExtensionContext, Item, PrimaryKey, Query } from '@directus/types';
+import { Item, PrimaryKey, Query } from '@directus/types';
+import type { ApiExtensionContext } from '@directus/extensions';
 import { readFile, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
 import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, JSONString, ToUpdateItemDiff } from './types';

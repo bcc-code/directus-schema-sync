@@ -10,6 +10,10 @@ import { ADMIN_ACCOUNTABILITY, ExportHelper, nodeImport } from './utils';
 const registerHook: HookConfig = async ({ action, init }, { env, services, database, getSchema, logger }) => {
   const { SchemaService, ItemsService } = services;
 
+  const schemaOptions = {
+    split: typeof env.SCHEMA_SYNC_SPLIT === 'boolean' ? env.SCHEMA_SYNC_SPLIT : true,
+  }
+
   let schema: SchemaOverview | null;
   const getAdminSchema = async () =>
     schema ||
@@ -40,7 +44,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
       _exportManager.addExporter({
         watch: ['collections', 'fields', 'relations'],
-        exporter: new SchemaExporter(getSchemaService, logger),
+        exporter: new SchemaExporter(getSchemaService, logger, schemaOptions),
       });
 
       const { syncDirectusCollections } = (await nodeImport(ExportHelper.schemaDir, 'directus_config.js')) as {
@@ -113,9 +117,10 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
     dbCommand
       .command('export-schema')
       .description('Export only the schema file')
-      .action(async () => {
+      .option('-S, --split', `Splits the schema file into multiple files per collection`)
+      .action(async (args: { split: boolean }) => {
         logger.info('Exporting schema...');
-        const exportSchema = new SchemaExporter(getSchemaService, logger);
+        const exportSchema = new SchemaExporter(getSchemaService, logger, args && 'split' in args ? args : schemaOptions);
         await exportSchema.export();
 
         await updateMeta();
@@ -132,7 +137,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
         const meta = await ExportHelper.getExportMeta();
         if (!meta) return logger.info('Nothing exported yet it seems'); 
 
-        const exportSchema = new SchemaExporter(getSchemaService, logger);
+        const exportSchema = new SchemaExporter(getSchemaService, logger, schemaOptions);
         await exportSchema.load();
 
         await updateManager.forceCommitUpdates(meta.hash, meta.ts);

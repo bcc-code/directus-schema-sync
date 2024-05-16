@@ -36,10 +36,15 @@
 		"release-channel": "node ./scripts/release-channel.js"
 	},
 	"devDependencies": {
-		"@directus/extensions-sdk": "10.1.11",
-		"@directus/types": "^10.1.6",
+		"@directus/api": "^19.1.0",
+		"@directus/extensions": "^1.0.4",
+		"@directus/extensions-sdk": "^11.0.4",
+		"@directus/types": "^11.1.1",
 		"@types/keyv": "^4.2.0",
 		"@types/node": "^20.8.7",
 		"typescript": "^5.2.2"
+	},
+	"dependencies": {
+		"glob": "^10.3.15"
 	}
 }
