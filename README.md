@@ -2,6 +2,8 @@
 
 The better way to sync your Directus schema, **configuration** and selected **data** between environments.
 
+Splits the schema file into multiple files once per collection, for easier management in git and working with the schema files in general.
+
 ![Schema Sync](https://raw.githubusercontent.com/bcc-code/directus-schema-sync/8b44ddba3a07dc881b44c003b39b7951b80a22f3/SchemaSync.png)
 
 Sync **chosen** data such as
@@ -113,6 +115,7 @@ onImport: async (item, itemsSrv) => {
 | -------- | ----------- | ------- |
 | `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
 | `SCHEMA_SYNC_CONFIG` | (optional) An additional config file to use in addition, eg. `test_config.js` | `null` |
+| `SCHEMA_SYNC_SPLIT` | (optional) Splits the schema file into multiple files once per collection | `true` |
 
 
 ## CI Commands
@@ -127,7 +130,7 @@ Besides auto importing and exporting, you can also run the commands manually.
 | `import` | Import the schema and data to the Directus API (options: `merge`) |
 | `hash`| Recalculate the hash for all the data files (already happens after export) |
 | `install` | Install the extension's columns in the database and add the config folder (options: `force`) |
-| `export-schema` | Export only the schema |
+| `export-schema` | Export only the schema (options: --split <boolean>) |
 | `import-schema` | Import only the schema |
 
 ## Contributing
