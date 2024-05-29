@@ -1,4 +1,10 @@
-# Version 2.0.0 ⚠️ Breaking change, due to new feature
+# Version 2.1.0
+
+  - **Added** `groupBy` parameter to collection options
+    - (optional) array of fields to group the exported data into multiple files, eg. ['collection'] (per collection)
+    - This is useful when you have a large amount of data in a collection (such as `directus_permissions`) and want to split it up into multiple files.
+
+## Version 2.0.0 ⚠️ Breaking change, due to new feature
 
 **By default will split schema file up into multiple files per collection**
 

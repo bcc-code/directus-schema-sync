@@ -1,13 +1,17 @@
 
 import { Item, PrimaryKey, Query } from '@directus/types';
 import type { ApiExtensionContext } from '@directus/extensions';
-import { readFile, writeFile } from 'fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
-import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, JSONString, ToUpdateItemDiff } from './types';
+import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, ToUpdateItemDiff } from './types';
 import { ExportHelper, getDiff, sortObject } from './utils.js';
+import { glob } from 'glob';
+
+type PARTIAL_CONFIG = { count: number, groupedBy: string[], partial: true };
 
 const DEFAULT_COLLECTION_EXPORTER_OPTIONS: CollectionExporterOptions = {
 	excludeFields: [],
+	groupBy: [],
 	query: {
 		limit: -1
 	}
@@ -21,18 +25,20 @@ class CollectionExporter implements IExporter {
 	protected filePath: string;
 
 	constructor(
-		collectionName: string, 
+		collectionName: string,
 		getItemsService: IGetItemsService,
 		options = DEFAULT_COLLECTION_EXPORTER_OPTIONS,
 		protected logger: ApiExtensionContext['logger']
 	) {
+		const { query, ...otherOpts } = options ?? {};
 		this.options = {
-      excludeFields: [],
-      query: {
-        limit: -1
-      },
-      ...options
-    };
+			excludeFields: [],
+			query: {
+				limit: -1,
+				...query,
+			},
+			...otherOpts
+		};
 
 		let srv: ItemsService;
 		this._getService = async () => srv || (srv = await getItemsService(collectionName));
@@ -41,6 +47,29 @@ class CollectionExporter implements IExporter {
 
 		const fileName = this.options.prefix ? `${this.options.prefix}_${collectionName}` : collectionName;
 		this.filePath = `${ExportHelper.dataDir}/${fileName}.json`
+	}
+
+	protected ensureCollectionGroupDir = async () => {
+		if (!await ExportHelper.fileExists(`${ExportHelper.dataDir}/${this.collection}`)) {
+			await mkdir(`${ExportHelper.dataDir}/${this.collection}`, { recursive: true });
+		} else {
+			// Clean up old files
+			const files = await glob(this.groupedFilesPath('*'));
+			for (const file of files) {
+				await rm(file);
+			}
+		}
+	}
+
+	protected itemGroupFilename(item: Item) {
+		if (!this.options.groupBy?.length) throw new Error('groupBy option not set');
+		// Use double dash to avoid conflicts with slugified names
+		return this.options.groupBy.map(field => item[field]).join('--').replace(/\s/g, '_');
+	}
+
+	protected groupedFilesPath(fileName: string) {
+		fileName = `${this.options.prefix || '_'}_${fileName}`;
+		return `${ExportHelper.dataDir}/${this.collection}/${fileName}.json`;
 	}
 
 	get name() {
@@ -53,15 +82,48 @@ class CollectionExporter implements IExporter {
 	public async load(merge = false) {
 		if (await ExportHelper.fileExists(this.filePath)) {
 			const json = await readFile(this.filePath, { encoding: 'utf8' });
-			return await this.loadJSON(json, merge);
+
+			const parsedJSON = JSON.parse(json) as Array<Item> | PARTIAL_CONFIG;
+
+			if (Array.isArray(parsedJSON)) {
+				return this.loadItems(parsedJSON, merge);
+			} else if (!parsedJSON.partial) {
+				throw new Error(`Invalid JSON: ${json}`);
+			}
+
+			return await this.loadGroupedItems(parsedJSON, merge);
 		}
 
 		return null;
 	}
 
 	protected exportCollectionToFile = async () => {
-		const json = await this.getJSON()
+		const items = await this.getItemsForExport();
+
 		this.logger.debug(`Exporting ${this.collection}`);
+
+		let json = '';
+		if (Array.isArray(items)) {
+			json = JSON.stringify(sortObject(items), null, 2);
+		} else {
+			await this.ensureCollectionGroupDir();
+
+			const config: PARTIAL_CONFIG = {
+				count: 0,
+				groupedBy: this.options.groupBy!,
+				partial: true,
+			};
+
+			for (const [key, group] of Object.entries(items)) {
+				config.count += group.length;
+				const filePath = this.groupedFilesPath(key);
+				const groupJson = JSON.stringify(sortObject(group), null, 2);
+				await writeFile(filePath, groupJson);
+			}
+
+			json = JSON.stringify(config, null, 2);
+		}
+
 		await writeFile(this.filePath, json);
 	}
 
@@ -74,12 +136,13 @@ class CollectionExporter implements IExporter {
 		query: Query;
 		queryWithPrimary: Query;
 	} | null = null;
+
 	protected async settings() {
 		if (this._settings) return this._settings;
 
 		const itemsSvc = await this._getService()
 		const schema = itemsSvc.schema.collections[this.collection]
-		
+
 		if (!schema) {
 			throw new Error(`Schema for ${this.collection} not found`)
 		}
@@ -88,7 +151,7 @@ class CollectionExporter implements IExporter {
 		if (exclFields.includes(schema.primary) && !this.options.getKey) {
 			throw new Error(`Can't exclude primary field ${schema.primary} without providing a getKey function`)
 		}
-		
+
 		let inclFields = [];
 		for (const fieldName in schema.fields) {
 			const field = schema.fields[fieldName]!;
@@ -106,7 +169,7 @@ class CollectionExporter implements IExporter {
 		query.sort = query.sort || [schema.sortField || schema.primary];
 
 		const queryWithPrimary: Query = exclFields.includes(schema.primary) ? { ...query, fields: [...inclFields, schema.primary] } : query;
-		
+
 		return this._settings = {
 			inclFields,
 			exclFields,
@@ -118,12 +181,12 @@ class CollectionExporter implements IExporter {
 		}
 	}
 
-	public async getJSON(): Promise<JSONString> {
+	public async getItemsForExport(): Promise<Array<Item> | Record<string, Array<Item>>> {
 		const itemsSvc = await this._getService();
 		const { query } = await this.settings();
 
 		let items = await itemsSvc.readByQuery(query);
-		if (!items.length) return '';
+		if (!items.length) return [];
 
 		if (this.options.onExport) {
 			const alteredItems = [];
@@ -131,11 +194,23 @@ class CollectionExporter implements IExporter {
 				const alteredItem = await this.options.onExport(item, itemsSvc);
 				if (alteredItem) alteredItems.push(alteredItem);
 			}
-			
+
 			items = alteredItems;
-		}		
-		
-		return JSON.stringify(sortObject(items), null, 2);
+		}
+
+		// If groupBy is set, group the json by the specified fields
+		if (this.options.groupBy?.length) {
+			const groupedItems = items.reduce((map, item) => {
+				const key = this.itemGroupFilename(item);
+				if (!map[key]) map[key] = [];
+				map[key].push(item);
+				return map;
+			}, {} as Record<string, Array<Item>>);
+
+			return groupedItems;
+		}
+
+		return items;
 	}
 
 
@@ -166,7 +241,7 @@ class CollectionExporter implements IExporter {
 				}
 			}
 		});
-		
+
 		items.sort((a, b) => this.countDependents(b) - this.countDependents(a));
 		items.forEach(o => delete o.__dependents);
 
@@ -178,13 +253,52 @@ class CollectionExporter implements IExporter {
 		return (o.__dependents as Array<Item>).reduce((acc, o) => acc + this.countDependents(o), o.__dependents.length);
 	}
 
-	public async loadJSON(json: JSONString | null, merge = false) {
-		if (!json) return null;
-		const loadedItems = JSON.parse(json) as Array<Item>;
-		if (!Array.isArray(loadedItems)) {
-			throw new Error(`Invalid JSON: ${json}`);
+
+	/**
+	 * Fetches the items from grouped files and then subsequently loads the items
+	 * 
+	 * @param config 
+	 * @param merge {see loadItems}
+	 * @returns 
+	 */
+	public async loadGroupedItems(config: PARTIAL_CONFIG, merge = false) {
+		const loadedItems = [];
+
+		let found = 0;
+		const files = await glob(this.groupedFilesPath('*'));
+		for (const file of files) {
+			const groupJson = await readFile(file, { encoding: 'utf8' });
+			const items = JSON.parse(groupJson) as Array<Item>;
+			if (!Array.isArray(items)) {
+				this.logger.warn(`Not items found in ${file}`);
+				continue;
+			}
+
+			found += items.length;
+			loadedItems.push(...items);
 		}
 
+		if (found !== config.count) {
+			if (found === 0) {
+				throw new Error('No items found in grouped files for ${this.collection}');
+			}
+
+			this.logger.warn(`Expected ${config.count} items, but found ${found}`);
+		}
+
+		this.logger.info(`Stitched ${found} items for ${this.collection} from ${files.length} files`);
+
+		return this.loadItems(loadedItems, merge);
+	}
+
+	/**
+	 * Loads the items and updates the database
+	 * 
+	 * @param loadedItems An array of items to load
+	 * @param merge boolean indicating whether to merge the items or replace them, ie. delete all items not in the JSON
+	 * @returns 
+	 */
+	public async loadItems(loadedItems: Array<Item>, merge = false) {
 		const itemsSvc = await this._getService();
 		const { getKey, getPrimary, queryWithPrimary } = await this.settings();
 
@@ -213,7 +327,7 @@ class CollectionExporter implements IExporter {
 				lr = await this.options.onImport(lr, itemsSvc) as Item;
 				if (!lr) continue;
 			}
-			
+
 			const lrKey = getKey(lr);
 
 			const existing = itemsMap.get(lrKey);

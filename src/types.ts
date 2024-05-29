@@ -26,10 +26,22 @@ export type ExportCollectionConfig = Record<
 >;
 
 export type CollectionExporterOptions = {
+	// Fields to exclude from checking/exporting
 	excludeFields?: string[];
+
+	// Fields on the same collection that are linked to form a hierarchy
 	linkedFields?: string[];
+
+	// Fields on which to group the items into multiple exported files
+	groupBy?: string[];
+
+	// Function to get a unique generated key for the item
 	getKey?: (o: Item) => PrimaryKey;
+
+	// Specify additional query options to filter, sort and limit the exported items
 	query?: Pick<Query, 'filter'|'sort'|'limit'>;
+
+	// Prefix to add to the exported file name
 	prefix?: string;
 	onExport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
 	onImport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
