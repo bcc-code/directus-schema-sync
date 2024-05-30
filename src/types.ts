@@ -39,18 +39,18 @@ export type CollectionExporterOptions = {
 	getKey?: (o: Item) => PrimaryKey;
 
 	// Specify additional query options to filter, sort and limit the exported items
-	query?: Pick<Query, 'filter'|'sort'|'limit'>;
+	query?: Pick<Query, 'filter' | 'sort' | 'limit'>;
 
 	// Prefix to add to the exported file name
 	prefix?: string;
 	onExport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
 	onImport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
-}
+};
 
 export type ToUpdateItemDiff = {
-	pkey: PrimaryKey
-	diff: any
-}
+	pkey: PrimaryKey;
+	diff: any;
+};
 
 //
 // Defining used Directus types here in order to get type hinting without installing entire Directus

@@ -14,16 +14,20 @@ export class SchemaExporter implements IExporter {
 	protected _exportHandler = condenseAction(() => this.createAndSaveSnapshot());
 
 	// Directus SchemaService, database and getSchema
-	constructor(getSchemaService: () => any, protected logger: ApiExtensionContext['logger'], protected options = { split: true }) {
+	constructor(
+		getSchemaService: () => any,
+		protected logger: ApiExtensionContext['logger'],
+		protected options = { split: true }
+	) {
 		this._getSchemaService = () => getSchemaService();
-		this._filePath = `${ExportHelper.dataDir}/schema.json`
+		this._filePath = `${ExportHelper.dataDir}/schema.json`;
 	}
 
 	protected ensureSchemaFilesDir = async () => {
-		if (!await ExportHelper.fileExists(`${ExportHelper.dataDir}/schema`)) {
+		if (!(await ExportHelper.fileExists(`${ExportHelper.dataDir}/schema`))) {
 			await mkdir(`${ExportHelper.dataDir}/schema`, { recursive: true });
 		}
-	}
+	};
 
 	protected schemaFilesPath(collection: string) {
 		return `${ExportHelper.dataDir}/schema/${collection}.json`;
@@ -45,7 +49,11 @@ export class SchemaExporter implements IExporter {
 			if (json) {
 				const schemaParsed = JSON.parse(json);
 				// For older versions, the snapshot was stored under the key `snapshot`
-				const { partial, hash, ...snapshot } = ((schemaParsed as any).snapshot ? Object.assign((schemaParsed as any).snapshot, { hash: schemaParsed.hash }) : schemaParsed) as Snapshot & { partial?: boolean, hash: string };
+				const { partial, hash, ...snapshot } = (
+					(schemaParsed as any).snapshot
+						? Object.assign((schemaParsed as any).snapshot, { hash: schemaParsed.hash })
+						: schemaParsed
+				) as Snapshot & { partial?: boolean; hash: string };
 
 				if (partial) {
 					snapshot.collections = [];
@@ -56,7 +64,10 @@ export class SchemaExporter implements IExporter {
 					const files = await glob(this.schemaFilesPath('*'));
 					for (const file of files) {
 						const collectionJson = await readFile(file, { encoding: 'utf8' });
-						const { fields, relations, ...collectionInfo } = JSON.parse(collectionJson) as Collection & { fields: SnapshotField[], relations: SnapshotRelation[] };
+						const { fields, relations, ...collectionInfo } = JSON.parse(collectionJson) as Collection & {
+							fields: SnapshotField[];
+							relations: SnapshotRelation[];
+						};
 						++found;
 
 						// Only add collection if it has a meta definition (actual table or group)
@@ -100,14 +111,14 @@ export class SchemaExporter implements IExporter {
 				}
 			}
 		}
-	}
+	};
 
 	/**
 	 * Create and save the schema snapshot to file
 	 */
 	protected createAndSaveSnapshot = async () => {
 		const svc = this._getSchemaService();
-		let snapshot = await svc.snapshot() as Snapshot;
+		let snapshot = (await svc.snapshot()) as Snapshot;
 		snapshot = exportHook(snapshot);
 		let hash = svc.getHashedSnapshot(snapshot).hash;
 
@@ -120,10 +131,12 @@ export class SchemaExporter implements IExporter {
 			relations.sort((a, b) => a.field.localeCompare(b.field));
 
 			// Sort relations also by related_collection
-			relations.sort((a, b) => a.related_collection && b.related_collection ? a.related_collection.localeCompare(b.related_collection) : 0);
+			relations.sort((a, b) =>
+				a.related_collection && b.related_collection ? a.related_collection.localeCompare(b.related_collection) : 0
+			);
 
 			const map: Record<string, any> = {};
-			collections.forEach((item) => {
+			collections.forEach(item => {
 				map[item.collection] = item;
 				map[item.collection].fields = [] as SnapshotField[];
 				map[item.collection].relations = [] as SnapshotRelation[];
@@ -142,7 +155,7 @@ export class SchemaExporter implements IExporter {
 				if (!map[collection]) {
 					map[collection] = { collection, fields: [], relations: [] };
 				}
-				
+
 				map[collection].relations.push(relationMeta);
 			}
 
@@ -159,5 +172,5 @@ export class SchemaExporter implements IExporter {
 			const schemaJson = JSON.stringify(Object.assign({ hash }, snapshot), null, 2);
 			await writeFile(this._filePath, schemaJson);
 		}
-	}
+	};
 }
