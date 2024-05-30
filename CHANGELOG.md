@@ -1,4 +1,9 @@
-# Version 2.1.0
+# Version 2.1.1
+
+  - Outputs additional helpful information when error occurs.
+    - Link to an issue when trying to import empty files.
+
+## Version 2.1.0
 
   - **Added** `groupBy` parameter to collection options
     - (optional) array of fields to group the exported data into multiple files, eg. ['collection'] (per collection)
