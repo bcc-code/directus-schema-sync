@@ -22,9 +22,9 @@ export class ExportHelper {
 		return resolve(ExportHelper.schemaDir, 'hash.txt');
 	}
 
-  static utcTS(isoTimestamp: string = new Date().toISOString()) {
-    return isoTimestamp.replace("T", " ").replace(/\.\d*Z/, "");
-  }
+	static utcTS(isoTimestamp: string = new Date().toISOString()) {
+		return isoTimestamp.replace('T', ' ').replace(/\.\d*Z/, '');
+	}
 
 	static async updateExportMeta(currentHash = '') {
 		const hasher = createHash('sha256');
@@ -41,12 +41,12 @@ export class ExportHelper {
 		if (hash === currentHash) return false;
 
 		const ts = ExportHelper.utcTS();
-		const txt = hash + '@' + ts
-		
+		const txt = hash + '@' + ts;
+
 		await writeFile(this.hashFile, txt);
 		return {
 			hash,
-			ts
+			ts,
 		};
 	}
 
@@ -67,7 +67,7 @@ export class ExportHelper {
 			if (hash && ts && new Date(ts).toString() !== 'Invalid Date') {
 				return {
 					hash,
-					ts
+					ts,
 				};
 			}
 		}
@@ -85,7 +85,7 @@ export function deepEqual(obj1: any, obj2: any): boolean {
 
 	const keys1 = Object.keys(obj1);
 	const keys2 = Object.keys(obj2);
-	 
+
 	if (keys1.length !== keys2.length) return false;
 
 	for (let key of keys1) {
@@ -100,7 +100,7 @@ export function getDiff(newObj: Record<any, any>, oldObj: any) {
 	if (!oldObj) return newObj;
 
 	const result: Record<any, any> = {};
-	let isDifferent = false
+	let isDifferent = false;
 	Object.keys(newObj).forEach(key => {
 		if (!deepEqual(newObj[key], oldObj[key])) {
 			result[key] = newObj[key];
@@ -114,16 +114,18 @@ export function sortObject<T extends Record<string, any>>(obj: T): T;
 export function sortObject<T>(obj: T[]): T[];
 export function sortObject<T extends Record<string, any> | T[]>(obj: T): T {
 	if (typeof obj !== 'object' || obj === null) {
-			return obj;
+		return obj;
 	}
 
 	if (Array.isArray(obj)) {
-			return obj.map(sortObject) as unknown as T;
+		return obj.map(sortObject) as unknown as T;
 	}
 
 	const sortedObj: Record<string, any> = {};
-	Object.keys(obj).sort().forEach(key => {
+	Object.keys(obj)
+		.sort()
+		.forEach(key => {
 			sortedObj[key] = sortObject((obj as Record<string, any>)[key]);
-	});
+		});
 	return sortedObj as T;
 }

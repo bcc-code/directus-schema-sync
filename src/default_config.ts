@@ -1,10 +1,10 @@
 /**
  * This file contains the default configuration for the schema exporter.
- * 
+ *
  * ONLY CHANGE THIS FILE IF YOU REALLY HAVE TO AND KNOW WHAT YOU ARE DOING!
  */
 
-import { ExportCollectionConfig } from "./types";
+import { ExportCollectionConfig } from './types';
 
 export const syncDirectusCollections: ExportCollectionConfig = {
 	directus_collections: {
@@ -16,7 +16,7 @@ export const syncDirectusCollections: ExportCollectionConfig = {
 	directus_fields: {
 		watch: ['fields', 'collections'],
 		excludeFields: ['id'],
-		getKey: (o) => `${o.collection}-${o.field}`,
+		getKey: o => `${o.collection}-${o.field}`,
 		query: {
 			sort: ['collection', 'field'],
 		},
@@ -24,7 +24,7 @@ export const syncDirectusCollections: ExportCollectionConfig = {
 	directus_relations: {
 		watch: ['relations'],
 		excludeFields: ['id'],
-		getKey: (o) => `${o.many_collection}-${o.many_field}`,
+		getKey: o => `${o.many_collection}-${o.many_field}`,
 		query: {
 			sort: ['many_collection', 'many_field'],
 		},
@@ -46,7 +46,7 @@ export const syncDirectusCollections: ExportCollectionConfig = {
 	directus_permissions: {
 		watch: ['permissions', 'collections', 'fields'],
 		excludeFields: ['id'],
-		getKey: (o) => `${o.role ?? 'public'}-${o.collection}--${o.action}`,
+		getKey: o => `${o.role ?? 'public'}-${o.collection}--${o.action}`,
 		query: {
 			sort: ['role', 'collection', 'action'],
 		},
@@ -75,7 +75,7 @@ export const syncDirectusCollections: ExportCollectionConfig = {
 	directus_translations: {
 		watch: ['translations'],
 		excludeFields: ['id'],
-		getKey: (o) => `${o.key}-${o.language}`,
+		getKey: o => `${o.key}-${o.language}`,
 		query: {
 			sort: ['key', 'language'],
 		},
