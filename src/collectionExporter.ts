@@ -299,11 +299,13 @@ class CollectionExporter implements IExporter {
 	/**
 	 * Loads the items and updates the database
 	 *
-	 * @param loadedItems An array of items to load
+	 * @param loadedItems An array of loaded items to sync with the database
 	 * @param merge boolean indicating whether to merge the items or replace them, ie. delete all items not in the JSON
 	 * @returns
 	 */
 	public async loadItems(loadedItems: Array<Item>, merge = false) {
+		if (merge && !loadedItems.length) return false;
+
 		const itemsSvc = await this._getService();
 		const { getKey, getPrimary, queryWithPrimary } = await this.settings();
 

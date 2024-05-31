@@ -34,7 +34,7 @@ export class ExportManager {
 		try {
 			const finishUp = await this.exporters[i]!.exporter.load(merge);
 			await this._loadNextExporter(i + 1, merge);
-			if (finishUp) await finishUp();
+			if (typeof finishUp === 'function') await finishUp();
 		} catch (e) {
 			this.logger.error(`Failed loading "${this.exporters[i]!.exporter.name}".`);
 			throw e;
