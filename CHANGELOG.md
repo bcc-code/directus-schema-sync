@@ -1,4 +1,9 @@
-# Version 2.1.1
+# Version 2.1.2
+
+  - Remove old schema files when genereating new schema files.
+    - This is to remove files of deleted collections.
+
+## Version 2.1.1
 
   - Outputs additional helpful information when error occurs.
     - Link to an issue when trying to import empty files.

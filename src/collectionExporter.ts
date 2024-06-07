@@ -237,12 +237,10 @@ class CollectionExporter implements IExporter {
 			return map;
 		}, {} as Record<PrimaryKey, Item>);
 
-		let hasDependents = false;
 		items.forEach(o => {
 			for (const fieldName of linkedFields) {
 				const value = o[fieldName];
 				if (value && itemsMap[value]) {
-					hasDependents = true;
 					itemsMap[value].__dependents.push(o);
 				}
 			}

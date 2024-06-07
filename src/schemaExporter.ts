@@ -1,7 +1,7 @@
 import type { Snapshot, SnapshotField, SnapshotRelation } from '@directus/api/dist/types';
 import type { ApiExtensionContext } from '@directus/extensions';
 import { Collection } from '@directus/types';
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { readFile, writeFile, mkdir, rm } from 'fs/promises';
 import { glob } from 'glob';
 import { condenseAction } from './condenseAction.js';
 import { exportHook } from './schemaExporterHooks.js';
@@ -26,6 +26,12 @@ export class SchemaExporter implements IExporter {
 	protected ensureSchemaFilesDir = async () => {
 		if (!(await ExportHelper.fileExists(`${ExportHelper.dataDir}/schema`))) {
 			await mkdir(`${ExportHelper.dataDir}/schema`, { recursive: true });
+		} else {
+			// Clean up old schema files
+			const files = await glob(this.schemaFilesPath('*'));
+			for (const file of files) {
+				await rm(file);
+			}
 		}
 	};
 
