@@ -1,6 +1,6 @@
 # Version 2.1.2
 
-  - Remove old schema files when genereating new schema files.
+  - Remove old schema files when generating new schema files.
     - This is to remove files of deleted collections.
 
 ## Version 2.1.1
