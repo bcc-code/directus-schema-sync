@@ -26,6 +26,8 @@ Upon installing configure what data you wish to export from the DB and be able t
 
 Depending on how you already are using Directus you can either install this plugin using a custom Docker image, or npm.
 
+NOTE: Installing via marketplace is not recommended as you would still need to execute the install command as well as configure the config files.
+
 ---
 
 ## via Docker
