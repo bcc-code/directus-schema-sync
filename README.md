@@ -87,7 +87,8 @@ You can create **additional config files** with the other config files, and set 
 
 View the comments in the `config.js` file for more information.
 
-**Exporting user passwords** does not work out of the box due to Directus masking the exported password. In order to export the hashed value you can add the following to your config for `directus_users`
+### Exporting users with passwords
+This does not work out of the box due to Directus masking the exported password. In order to export the hashed value you can add the following to your config for `directus_users`
 
 ```js
 onExport: async (item, itemsSrv) => {

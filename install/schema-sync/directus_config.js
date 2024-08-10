@@ -10,15 +10,41 @@
  * Add custom collections to the syncCustomCollections object in the config.js file.
  */
 export const syncDirectusCollections = {
-	directus_roles: {
-		watch: ['roles'],
-	},
 	directus_folders: {
 		watch: ['folders'],
 		excludeFields: [],
 		linkedFields: ['parent'],
 		query: {
 			sort: ['parent', 'id'],
+		},
+	},
+	directus_roles: {
+		watch: ['roles'],
+		linkedFields: ['parent'],
+		query: {
+			sort: ['name'],
+		},
+	},
+	directus_policies: {
+		watch: ['policies'],
+		query: {
+			sort: ['name'],
+		},
+	},
+	directus_permissions: {
+		watch: ['permissions', 'collections', 'fields'],
+		excludeFields: ['id'],
+		getKey: o => `${o.policy}-${o.collection}-${o.action}`,
+		query: {
+			sort: ['policy', 'collection', 'action'],
+		},
+	},
+	directus_access: {
+		watch: ['access'],
+		excludeFields: ['id'],
+		getKey: o => `${o.role ?? o.user ?? 'public'}-${o.policy}`,
+		query: {
+			sort: ['policy'],
 		},
 	},
 	directus_permissions: {
