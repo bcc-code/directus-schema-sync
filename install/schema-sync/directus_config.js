@@ -47,15 +47,6 @@ export const syncDirectusCollections = {
 			sort: ['policy'],
 		},
 	},
-	directus_permissions: {
-		watch: ['permissions', 'collections', 'fields'],
-		excludeFields: ['id'],
-		groupBy: ['collection'],
-		getKey: (o) => `${o.role ?? 'public'}-${o.collection}--${o.action}`,
-		query: {
-			sort: ['role', 'collection', 'action'],
-		},
-	},
 	directus_settings: {
 		watch: ['settings'],
 		excludeFields: [
