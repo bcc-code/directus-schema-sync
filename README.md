@@ -28,6 +28,9 @@ Depending on how you already are using Directus you can either install this plug
 
 NOTE: Installing via marketplace is not recommended as you would still need to execute the install command as well as configure the config files.
 
+ - ** DIRECTUS 11 ** Use latest version
+ - ** DIRECTUS < 10 ** Use version 2.*
+
 ---
 
 ## via Docker
@@ -135,6 +138,52 @@ Besides auto importing and exporting, you can also run the commands manually.
 | `install` | Install the extension's columns in the database and add the config folder (options: `force`) |
 | `export-schema` | Export only the schema (options: --split <boolean>) |
 | `import-schema` | Import only the schema |
+
+## Migrating from V2 to V3
+
+Update the `schema-sync/directus_config.js` file with the following:
+
+Replace `directus_roles`
+Add `directus_policies` 
+Replace `directus_permissions`
+Add `directus_access`
+
+```
+…
+	directus_roles: {
+		watch: ['roles'],
+		linkedFields: ['parent'],
+		query: {
+			sort: ['name'],
+		},
+	},
+	directus_policies: {
+		watch: ['policies'],
+		query: {
+			sort: ['name'],
+		},
+	},
+	directus_permissions: {
+		watch: ['permissions', 'collections', 'fields'],
+		excludeFields: ['id'],
+		getKey: o => `${o.policy}-${o.collection}-${o.action}`,
+		query: {
+			sort: ['policy', 'collection', 'action'],
+		},
+	},
+	directus_access: {
+		watch: ['access'],
+		excludeFields: ['id'],
+		getKey: o => `${o.role ?? o.user ?? 'public'}-${o.policy}`,
+		query: {
+			sort: ['role', 'policy'],
+			filter: {
+				user: { _null: true },
+			},
+		},
+	},
+…
+```
 
 ## Contributing
 
