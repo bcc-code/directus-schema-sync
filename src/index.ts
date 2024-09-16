@@ -157,6 +157,8 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 				logger.info('Installing Schema sync...');
 				await updateManager.ensureInstalled();
 				await copyConfig(force, { logger });
+				(await exportManager()).exportAll();
+				await updateMeta();
 
 				logger.info('Done!');
 				process.exit(0);
