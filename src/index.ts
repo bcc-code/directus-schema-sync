@@ -89,8 +89,6 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	if (env.SCHEMA_SYNC === 'BOTH' || env.SCHEMA_SYNC === 'IMPORT') {
 		init('app.before', async () => {
 			try {
-				await updateManager.ensureInstalled();
-
 				const meta = await ExportHelper.getExportMeta();
 				if (!meta) return logger.info('Nothing exported yet it seems');
 				if (!(await updateManager.lockForUpdates(meta.hash, meta.ts))) return; // Schema is locked / no change, nothing to do

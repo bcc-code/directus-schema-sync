@@ -28,6 +28,13 @@ export class UpdateManager {
 		if (this._locked || this._locking) return false;
 		this._locking = true;
 
+		// Don't lock if schema sync is not installed yet
+		const isInstalled = await this.db.schema.hasColumn(this.tableName, 'mv_hash');
+		if (!isInstalled) {
+			this._locking = false;
+			return true;
+		}
+
 		const succeeded = await this.db.transaction(async trx => {
 			const rows = await trx(this.tableName)
 				.select('*')
@@ -94,6 +101,7 @@ export class UpdateManager {
 		return true;
 	}
 
+
 	public async ensureInstalled() {
 		const tableName = 'directus_settings';
 
@@ -105,6 +113,8 @@ export class UpdateManager {
 				table.timestamp('mv_ts', { useTz: true }).defaultTo('2020-01-01').notNullable();
 				table.boolean('mv_locked').defaultTo(false).notNullable();
 			});
+			return true;
 		}
+		return false;
 	}
 }
