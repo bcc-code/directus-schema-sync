@@ -33,6 +33,8 @@ NOTE: Installing via marketplace is not recommended as you would still need to e
 
 ---
 
+Follow the instructions below to install the extension, ensure to first install the extension on your local environment and then export the schema and data. This will create the necessary files for the extension to work. Only once you have the files can you update your .env file with the `SCHEMA_SYNC` variable.
+
 ## via Docker
 
 If you don't already have a Dockerfile, you can use the following [instructions to get started.](https://docs.directus.io/extensions/installing-extensions.html)
