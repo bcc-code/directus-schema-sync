@@ -35,7 +35,7 @@ NOTE: Installing via marketplace is not recommended as you would still need to e
 
 Follow the instructions below to install the extension, ensure to first install the extension on your local environment and then export the schema and data. This will create the necessary files for the extension to work. Only once you have the files can you update your .env file with the `SCHEMA_SYNC` variable.
 
-## via Docker
+## 1 via Docker
 
 If you don't already have a Dockerfile, you can use the following [instructions to get started.](https://docs.directus.io/extensions/installing-extensions.html)
 
@@ -71,20 +71,21 @@ docker compose exec -it my-directus npx directus schema-sync install --force
 
 ---
 
-## via NPM (Assuming you are running Directus via NPM)
+## 1 via NPM (Assuming you are running Directus via NPM)
 
  1. `npm install directus-extension-schema-sync`
  2. Then run `directus schema-sync install` to install the extension's columns in the database and add the config folder
  4. Edit the `config.js` in the schema directory and add your collections you want to sync
  5. Finally run `directus schema-sync export` to export the schema and data from the Directus API
 
+## 2 Configuration
+
+View and edit the schema-sync/*_config.js_ file to include the collections you want to sync. 
+
+To automatically import and export the schema and data, set the `SCHEMA_SYNC` environment variable to `IMPORT`, `EXPORT` or `BOTH`.
 In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
 
-View changelog for more information. [CHANGELOG.md](https://github.com/bcc-code/directus-schema-sync/blob/main/CHANGELOG.md)
-
-# Usage
-
-## Tips
+### Tips
 
 **Order matters** when importing and exporting. For example if you have a collection (A) with a relation to another collection (B), then ensure in the config that collection (B) comes first. This is so when we import, we first import B, then A. Deletions happen afterward in the reverse order.
 
@@ -190,3 +191,5 @@ Add `directus_access`
 ## Contributing
 
 Contributions are welcome. Please open an issue or pull request.
+
+View changelog for more information. [CHANGELOG.md](https://github.com/bcc-code/directus-schema-sync/blob/main/CHANGELOG.md)
