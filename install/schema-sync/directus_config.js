@@ -18,17 +18,17 @@ export const syncDirectusCollections = {
 			sort: ['parent', 'id'],
 		},
 	},
-	// directus_files: {
-	// 	watch: ['files'],
-	// 	excludeFields: [],
-	// 	query: {
-	// 		filter: {
-	// 			storage: {
-	// 				_eq: 'local',
-	// 			},
-	// 		}
-	// 	},
-	// },
+	/* directus_files: {
+		watch: ['files'],
+		excludeFields: [],
+		query: {
+			filter: {
+				storage: {
+					_eq: 'local',
+				},
+			}
+		},
+	},*/
 	directus_roles: {
 		watch: ['roles'],
 		linkedFields: ['parent'],
