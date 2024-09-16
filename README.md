@@ -62,7 +62,7 @@ Once it is running, run the following command (from host) to install the extensi
 
 ```bash
 // docker exec -it <container> <command>
-docker-compose exec -it my-directus npx directus schema-sync install --force
+docker compose exec -it my-directus npx directus schema-sync install --force
 ```
 
 	We are using force since we do want to replace the `schema-sync` folder already added as a volumn
