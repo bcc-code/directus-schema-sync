@@ -58,6 +58,39 @@ export const syncDirectusCollections = {
 			sort: ['policy'],
 		},
 	},
+	/* directus_users: {
+		watch: ['users'],
+		excludeFields: ['avatar'],
+		query: {
+			filter: {
+				id: {
+					_in: [], // insert id of users you want to export
+				},
+			},
+			limit: 1,
+			sort: ['d]
+		},
+		/* // Uncomment this to export the password
+		onExport: async (item, itemsSrv) => {
+			if (item.password && item.password === '**********') {
+				const user = await itemsSrv.knex.select('password').from('directus_users').where('id', item.id).first();
+				if (user) {
+					item.password = user.password;
+				}
+			}
+		
+			return item;
+		},
+		// And then to import the password
+		onImport: async (item, itemsSrv) => {
+			if (item.password && item.password.startsWith('$argon')) {
+				await itemsSrv.knex('directus_users').update('password', item.password).where('id', item.id);
+				item.password = '**********';
+			}
+		
+			return item;
+		}, */
+	},*/
 	directus_settings: {
 		watch: ['settings'],
 		excludeFields: [
@@ -110,33 +143,5 @@ export const syncDirectusCollections = {
 		query: {
 			sort: ['key', 'language'],
 		},
-	},
-	/* directus_webhooks: {
-		watch: ['webhooks'],
-		excludeFields: ['url'],
-	}, */
-	
-	// These are already exported via schema, so you might not need them
-	/*directus_collections: {
-		watch: ['relations'],
-		query: {
-			sort: ['collection'],
-		},
-	},*/
-	/*directus_fields: {
-		watch: ['fields', 'collections'],
-		excludeFields: ['id'],
-		getKey: (o) => `${o.collection}-${o.field}`,
-		query: {
-			sort: ['collection', 'field'],
-		},
-	},*/
-	/*directus_relations: {
-		watch: ['relations'],
-		excludeFields: ['id'],
-		getKey: (o) => `${o.many_collection}-${o.many_field}`,
-		query: {
-			sort: ['many_collection', 'many_field'],
-		},
-	},*/
+	}
 };
