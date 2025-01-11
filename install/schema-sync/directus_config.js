@@ -89,7 +89,7 @@ export const syncDirectusCollections = {
 			}
 		
 			return item;
-		}, */
+		},
 	},*/
 	directus_settings: {
 		watch: ['settings'],
