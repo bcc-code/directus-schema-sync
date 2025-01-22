@@ -9,7 +9,7 @@ import { ADMIN_ACCOUNTABILITY, ExportHelper, nodeImport } from './utils';
 
 const registerHook: HookConfig = async ({ action, init }, { env, services, database, getSchema, logger }) => {
 	const { SchemaService, ItemsService } = services;
-
+	ExportHelper.environment = env.SCHEMA_SYNC_ENV
 	const schemaOptions = {
 		split: typeof env.SCHEMA_SYNC_SPLIT === 'boolean' ? env.SCHEMA_SYNC_SPLIT : true,
 	};
