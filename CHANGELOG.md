@@ -1,4 +1,11 @@
-# Version 2.1.2
+# Version 3.0.5
+
+  - **Added** `SCHEMA_SYNC_MERGE` option to environment variables
+    - Only insert and update items found in the import set (including duplicates). Does not remove items in the DB that are not in the import set.
+  - **Fixed** issue where duplicate items were not being deleted when importing when `--merge` was used.
+  - **Fixed** order of deleting duplicates before inserting new items.
+
+## Version 2.1.2
 
   - Remove old schema files when generating new schema files.
     - This is to remove files of deleted collections.

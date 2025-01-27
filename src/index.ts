@@ -1,4 +1,5 @@
-import { HookConfig, SchemaOverview } from '@directus/types';
+import { SchemaOverview } from '@directus/types';
+import { HookConfig } from '@directus/extensions';
 import { condenseAction } from './condenseAction';
 import { copyConfig } from './copyConfig';
 import { ExportManager } from './exportManager';
@@ -17,10 +18,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	let schema: SchemaOverview | null;
 	const getAdminSchema = async () =>
 		schema ||
-		(schema = await getSchema({
-			accountability: ADMIN_ACCOUNTABILITY,
-			database,
-		}));
+		(schema = await getSchema({ database }));
 	const clearAdminSchema = () => (schema = null);
 	const getSchemaService = () =>
 		new SchemaService({
@@ -95,7 +93,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 				logger.info(`Updating schema and data with hash: ${meta.hash}`);
 				const expMng = await exportManager();
-				await expMng.loadAll();
+				await expMng.loadAll(!!env.SCHEMA_SYNC_MERGE);
 
 				await updateManager.commitUpdates();
 				clearAdminSchema();

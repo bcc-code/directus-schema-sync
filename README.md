@@ -125,6 +125,7 @@ onImport: async (item, itemsSrv) => {
 | `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
 | `SCHEMA_SYNC_CONFIG` | (optional) An additional config file to use in addition, eg. `test_config.js` | `null` |
 | `SCHEMA_SYNC_SPLIT` | (optional) Splits the schema file into multiple files once per collection | `true` |
+| `SCHEMA_SYNC_MERGE` | (optional) Only insert and update items found in the import set (including duplicates). Does not remove items in the DB that are not in the import set. | `false` |
 
 
 ## CI Commands

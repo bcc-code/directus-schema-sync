@@ -302,7 +302,7 @@ class CollectionExporter implements IExporter {
 	 * @returns
 	 */
 	public async loadItems(loadedItems: Array<Item>, merge = false) {
-		if (merge && !loadedItems.length) return false;
+		if (merge && !loadedItems.length) return null;
 
 		const itemsSvc = await this._getService();
 		const { getKey, getPrimary, queryWithPrimary } = await this.settings();
@@ -310,23 +310,31 @@ class CollectionExporter implements IExporter {
 		const items = await itemsSvc.readByQuery(queryWithPrimary);
 
 		const itemsMap = new Map<PrimaryKey, Item>();
-		let toDelete: Array<PrimaryKey> = [];
+		const duplicatesToDelete: Array<PrimaryKey> = [];
 
+		// First pass: identify duplicates and build initial map
 		items.forEach(item => {
 			const itemKey = getKey(item);
 			if (itemsMap.has(itemKey)) {
 				const itemId = getPrimary(itemsMap.get(itemKey)!);
 				this.logger.warn(`Will delete duplicate ${this.collection} item found #${itemId}`);
-				// Delete duplicate
-				toDelete.push(itemId);
+				duplicatesToDelete.push(itemId);
 			}
+
 			itemsMap.set(itemKey, item);
 		});
+
+		// Delete duplicates first
+		if (duplicatesToDelete.length > 0) {
+			this.logger.debug(`Deleting ${duplicatesToDelete.length} duplicate ${this.collection} items`);
+			await itemsSvc.deleteMany(duplicatesToDelete);
+		}
 
 		const toUpdate = new Map<PrimaryKey, ToUpdateItemDiff>();
 		const toInsert: Record<PrimaryKey, Item> = {};
 		const toDeleteItems = new Map<PrimaryKey, Item>(itemsMap);
 
+		// Process imported items
 		for (let lr of loadedItems) {
 			if (this.options.onImport) {
 				lr = (await this.options.onImport(lr, itemsSvc)) as Item;
@@ -376,8 +384,8 @@ class CollectionExporter implements IExporter {
 
 		const finishUp = async () => {
 			if (!merge) {
-				// Delete
-				toDelete = toDelete.concat(Array.from(toDeleteItems.values(), getPrimary));
+				// When not merging, delete items that weren't in the import set
+				const toDelete = Array.from(toDeleteItems.values(), getPrimary);
 				if (toDelete.length > 0) {
 					this.logger.debug(`Deleting ${toDelete.length} x ${this.collection} items`);
 					await itemsSvc.deleteMany(toDelete);
