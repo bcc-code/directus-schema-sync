@@ -36,37 +36,48 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 	// We need to do this in async in order to load the config files
 	let _exportManager: ExportManager;
-	const exportManager = async () => {
-		if (!_exportManager) {
-			_exportManager = new ExportManager(logger);
 
-			if (env.SCHEMA_SYNC_DATA_ONLY !== true) {
-				_exportManager.addExporter({
-					watch: ['collections', 'fields', 'relations'],
-					exporter: new SchemaExporter(getSchemaService, logger, schemaOptions),
-				});
-			}
+	const createExportManager = async (dataOnly = false) => {
+		const exportMng = new ExportManager(logger);
 
-			const { syncDirectusCollections } = (await nodeImport(ExportHelper.schemaDir, 'directus_config.js')) as {
-				syncDirectusCollections: ExportCollectionConfig;
-			};
-			const { syncCustomCollections } = (await nodeImport(ExportHelper.schemaDir, 'config.js')) as {
+		if (!dataOnly) {
+			exportMng.addExporter({
+				watch: ['collections', 'fields', 'relations'],
+				exporter: new SchemaExporter(getSchemaService, logger, schemaOptions),
+			});
+		}
+
+		const { syncDirectusCollections } = (await nodeImport(ExportHelper.schemaDir, 'directus_config.js')) as {
+			syncDirectusCollections: ExportCollectionConfig;
+		};
+		const { syncCustomCollections } = (await nodeImport(ExportHelper.schemaDir, 'config.js')) as {
+			syncCustomCollections: ExportCollectionConfig;
+		};
+		exportMng.addCollectionExporter(syncDirectusCollections, getItemsService);
+		exportMng.addCollectionExporter(syncCustomCollections, getItemsService);
+
+		// Additional config
+		if (env.SCHEMA_SYNC_CONFIG) {
+			const { syncCustomCollections } = (await nodeImport(ExportHelper.schemaDir, env.SCHEMA_SYNC_CONFIG)) as {
 				syncCustomCollections: ExportCollectionConfig;
 			};
-			_exportManager.addCollectionExporter(syncDirectusCollections, getItemsService);
-			_exportManager.addCollectionExporter(syncCustomCollections, getItemsService);
-
-			// Additional config
-			if (env.SCHEMA_SYNC_CONFIG) {
-				const { syncCustomCollections } = (await nodeImport(ExportHelper.schemaDir, env.SCHEMA_SYNC_CONFIG)) as {
-					syncCustomCollections: ExportCollectionConfig;
-				};
-				if (syncCustomCollections) {
-					_exportManager.addCollectionExporter(syncCustomCollections, getItemsService);
-				} else {
-					logger.warn(`Additonal config specified but not exporting "syncCustomCollections"`);
-				}
+			if (syncCustomCollections) {
+				exportMng.addCollectionExporter(syncCustomCollections, getItemsService);
+			} else {
+				logger.warn(`Additonal config specified but not exporting "syncCustomCollections"`);
 			}
+		}
+
+		return exportMng;
+	}
+		
+	const exportManager = async (dataOnly = false) => {
+		if (dataOnly && env.SCHEMA_SYNC_DATA_ONLY !== true) {
+			return await createExportManager(true);
+		}
+
+		if (!_exportManager) {
+			_exportManager = await createExportManager(env.SCHEMA_SYNC_DATA_ONLY !== true);
 		}
 
 		return _exportManager;
@@ -177,10 +188,11 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 			.command('import')
 			.description('Import the schema and all available data from file to DB.')
 			.option('--merge', 'Only upsert data and not delete')
-			.action(async ({ merge }: { merge: boolean }) => {
+			.option('--data', 'Only import data and not schema')
+			.action(async ({ merge, data }: { merge: boolean; data: boolean }) => {
 				try {
 					logger.info(`Importing everything from: ${ExportHelper.dataDir}`);
-					const expMng = await exportManager();
+					const expMng = await exportManager(data);
 					await expMng.loadAll(merge);
 
 					logger.info('Done!');

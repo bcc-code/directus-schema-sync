@@ -138,7 +138,7 @@ Besides auto importing and exporting, you can also run the commands manually.
 | Command | Description |
 | ------- | ----------- |
 | `export` | Export the schema and data from the Directus API |
-| `import` | Import the schema and data to the Directus API (options: `merge`) |
+| `import` | Import the schema and data to the Directus API (options: `merge`, `data`) |
 | `hash`| Recalculate the hash for all the data files (already happens after export) |
 | `install` | Install the extension's columns in the database and add the config folder (options: `force`) |
 | `export-schema` | Export only the schema (options: --split <boolean>) |

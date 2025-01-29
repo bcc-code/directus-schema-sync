@@ -2,7 +2,7 @@
 	"name": "directus-extension-schema-sync",
 	"description": "Sync schema and data betwreen Directus instances",
 	"icon": "sync_alt",
-	"version": "3.0.5",
+	"version": "3.0.6",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/bcc-code/directus-schema-sync.git"

@@ -1,4 +1,10 @@
-# Version 3.0.5
+# Version 3.0.6
+
+  - **Added** Way to only import data and not the schema, for cases where you use something else to migrate your schema.
+    - Set `SCHEMA_SYNC_DATA_ONLY=true` in your environment file.
+    - Or when using `import` command, use `--data` option.
+
+## Version 3.0.5
 
   - **Added** `SCHEMA_SYNC_MERGE` option to environment variables
     - Only insert and update items found in the import set (including duplicates). Does not remove items in the DB that are not in the import set.
