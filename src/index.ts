@@ -40,10 +40,12 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 		if (!_exportManager) {
 			_exportManager = new ExportManager(logger);
 
-			_exportManager.addExporter({
-				watch: ['collections', 'fields', 'relations'],
-				exporter: new SchemaExporter(getSchemaService, logger, schemaOptions),
-			});
+			if (env.SCHEMA_SYNC_DATA_ONLY !== true) {
+				_exportManager.addExporter({
+					watch: ['collections', 'fields', 'relations'],
+					exporter: new SchemaExporter(getSchemaService, logger, schemaOptions),
+				});
+			}
 
 			const { syncDirectusCollections } = (await nodeImport(ExportHelper.schemaDir, 'directus_config.js')) as {
 				syncDirectusCollections: ExportCollectionConfig;
