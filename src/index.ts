@@ -77,7 +77,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 		}
 
 		if (!_exportManager) {
-			_exportManager = await createExportManager(env.SCHEMA_SYNC_DATA_ONLY !== true);
+			_exportManager = await createExportManager(!!env.SCHEMA_SYNC_DATA_ONLY);
 		}
 
 		return _exportManager;

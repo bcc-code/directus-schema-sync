@@ -1,4 +1,8 @@
-# Version 3.0.6
+# Version 3.0.7
+
+  - **Fixed** SCHEMA_SYNC_DATA_ONLY being the opposite of what it should be.
+
+## ~~Version 3.0.6~~
 
   - **Added** Way to only import data and not the schema, for cases where you use something else to migrate your schema.
     - Set `SCHEMA_SYNC_DATA_ONLY=true` in your environment file.
