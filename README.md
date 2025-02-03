@@ -53,7 +53,7 @@ In your `docker-compose` file we need to add the `schema-sync` so that we can co
 ```yaml
 // docker-compose.yaml
 volumes:
-	- ./schema-sync:/directus/schema-sync
+  - ./schema-sync:/directus/schema-sync
 ```
 
 (re)Build and run your container.
@@ -67,7 +67,7 @@ Once it is running, run the following command (from host) to install the extensi
 docker compose exec -it my-directus npx directus schema-sync install --force
 ```
 
-	We are using force since we do want to replace the `schema-sync` folder already added as a volumn
+	We are using force since we do want to replace the `schema-sync` folder already added as a volume
 
 ---
 
@@ -75,15 +75,17 @@ docker compose exec -it my-directus npx directus schema-sync install --force
 
  1. `npm install directus-extension-schema-sync`
  2. Then run `directus schema-sync install` to install the extension's columns in the database and add the config folder
- 4. Edit the `config.js` in the schema directory and add your collections you want to sync
- 5. Finally run `directus schema-sync export` to export the schema and data from the Directus API
+ 3. Edit the `config.js` in the schema directory and add your collections you want to sync
+ 4. Finally run `directus schema-sync export` to export the schema and data from the Directus API
 
 ## 2 Configuration
 
-View and edit the schema-sync/*_config.js_ file to include the collections you want to sync. 
+View and edit the schema-sync/*_config.js_ file to include the collections you want to sync.
 
 To automatically import and export the schema and data, set the `SCHEMA_SYNC` environment variable to `IMPORT`, `EXPORT` or `BOTH`.
 In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
+
+Note: This extension will not work if there is no row in the `directus_settings` database table. To avoid this happening, make sure `PROJECT_NAME` configuration variable is set when Directus is first time installed into the database. Alternatively, if Directus is already installed, just manually create a row in `directus_settings`, if one is not already there, with whatever project name you want and keep everything else to defaults.
 
 ### Tips
 
