@@ -67,7 +67,7 @@ Once it is running, run the following command (from host) to install the extensi
 docker compose exec -it my-directus npx directus schema-sync install --force
 ```
 
-	We are using force since we do want to replace the `schema-sync` folder already added as a volumn
+	We are using force since we do want to replace the `schema-sync` folder already added as a volume
 
 ---
 
@@ -84,6 +84,8 @@ View and edit the schema-sync/*_config.js_ file to include the collections you w
 
 To automatically import and export the schema and data, set the `SCHEMA_SYNC` environment variable to `IMPORT`, `EXPORT` or `BOTH`.
 In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
+
+Note: This extension will not work if there is no row in the `directus_settings` database table. To avoid this happening, make sure `PROJECT_NAME` configuration variable is set when Directus is first time installed into the database. Alternatively, if Directus is already installed, just manually create a row in `directus_settings`, if one is not already there, with whatever project name you want and keep everything else to defaults.
 
 ### Tips
 
