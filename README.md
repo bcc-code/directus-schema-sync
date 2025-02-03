@@ -53,7 +53,7 @@ In your `docker-compose` file we need to add the `schema-sync` so that we can co
 ```yaml
 // docker-compose.yaml
 volumes:
-	- ./schema-sync:/directus/schema-sync
+  - ./schema-sync:/directus/schema-sync
 ```
 
 (re)Build and run your container.
@@ -75,12 +75,12 @@ docker compose exec -it my-directus npx directus schema-sync install --force
 
  1. `npm install directus-extension-schema-sync`
  2. Then run `directus schema-sync install` to install the extension's columns in the database and add the config folder
- 4. Edit the `config.js` in the schema directory and add your collections you want to sync
- 5. Finally run `directus schema-sync export` to export the schema and data from the Directus API
+ 3. Edit the `config.js` in the schema directory and add your collections you want to sync
+ 4. Finally run `directus schema-sync export` to export the schema and data from the Directus API
 
 ## 2 Configuration
 
-View and edit the schema-sync/*_config.js_ file to include the collections you want to sync. 
+View and edit the schema-sync/*_config.js_ file to include the collections you want to sync.
 
 To automatically import and export the schema and data, set the `SCHEMA_SYNC` environment variable to `IMPORT`, `EXPORT` or `BOTH`.
 In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
