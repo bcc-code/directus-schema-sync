@@ -82,24 +82,25 @@ class CollectionExporter implements IExporter {
 	public export = () => this._persistQueue();
 
 	public async load(merge = false) {
-		if (await ExportHelper.fileExists(this.filePath)) {
-			const json = await readFile(this.filePath, { encoding: 'utf8' });
-
-			if (!json) {
-				throw new Error(`Collection ${this.name} has invalid content: ${json}`);
-			}
-			const parsedJSON = JSON.parse(json) as Array<Item> | PARTIAL_CONFIG;
-
-			if (Array.isArray(parsedJSON)) {
-				return this.loadItems(parsedJSON, merge);
-			} else if (!parsedJSON.partial) {
-				throw new Error(`Collection ${this.name} has invalid JSON: ${json}`);
-			}
-
-			return await this.loadGroupedItems(parsedJSON, merge);
+		let json;
+		try {
+			json = await readFile(this.filePath, { encoding: 'utf8' });
+		} catch (e) {
+			return null;
 		}
 
-		return null;
+		if (!json) {
+			throw new Error(`Collection ${this.name} has invalid content: ${json}`);
+		}
+		const parsedJSON = JSON.parse(json) as Array<Item> | PARTIAL_CONFIG;
+
+		if (Array.isArray(parsedJSON)) {
+			return this.loadItems(parsedJSON, merge);
+		} else if (!parsedJSON.partial) {
+			throw new Error(`Collection ${this.name} has invalid JSON: ${json}`);
+		}
+
+		return await this.loadGroupedItems(parsedJSON, merge);		
 	}
 
 	protected exportCollectionToFile = async () => {

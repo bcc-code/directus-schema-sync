@@ -1,5 +1,5 @@
-import { SchemaOverview } from '@directus/types';
-import { HookConfig } from '@directus/extensions';
+import type { HookConfig } from '@directus/extensions';
+import type { SchemaOverview } from '@directus/types';
 import { condenseAction } from './condenseAction';
 import { copyConfig } from './copyConfig';
 import { ExportManager } from './exportManager';

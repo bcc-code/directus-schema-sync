@@ -29,9 +29,7 @@ export class SchemaExporter implements IExporter {
 		} else {
 			// Clean up old schema files
 			const files = await glob(this.schemaFilesPath('*'));
-			for (const file of files) {
-				await rm(file);
-			}
+			await Promise.all(files.map(file => rm(file)));
 		}
 	};
 
@@ -50,71 +48,74 @@ export class SchemaExporter implements IExporter {
 	 */
 	public load = async () => {
 		const svc = this._getSchemaService();
-		if (await ExportHelper.fileExists(this._filePath)) {
-			const json = await readFile(this._filePath, { encoding: 'utf8' });
-			if (json) {
-				const schemaParsed = JSON.parse(json);
-				// For older versions, the snapshot was stored under the key `snapshot`
-				const { partial, hash, ...snapshot } = (
-					(schemaParsed as any).snapshot
-						? Object.assign((schemaParsed as any).snapshot, { hash: schemaParsed.hash })
-						: schemaParsed
-				) as Snapshot & { partial?: boolean; hash: string };
+		let json;
+		try {
+			json = await readFile(this._filePath, { encoding: 'utf8' });
+		} catch (e) {
+			return;
+		}
+		if (json) {
+			const schemaParsed = JSON.parse(json);
+			// For older versions, the snapshot was stored under the key `snapshot`
+			const { partial, hash, ...snapshot } = (
+				(schemaParsed as any).snapshot
+					? Object.assign((schemaParsed as any).snapshot, { hash: schemaParsed.hash })
+					: schemaParsed
+			) as Snapshot & { partial?: boolean; hash: string };
 
-				if (partial) {
-					snapshot.collections = [];
-					snapshot.fields = [];
-					snapshot.relations = [];
+			if (partial) {
+				snapshot.collections = [];
+				snapshot.fields = [];
+				snapshot.relations = [];
 
-					let found = 0;
-					const files = await glob(this.schemaFilesPath('*'));
-					for (const file of files) {
-						const collectionJson = await readFile(file, { encoding: 'utf8' });
-						const { fields, relations, ...collectionInfo } = JSON.parse(collectionJson) as Collection & {
-							fields: SnapshotField[];
-							relations: SnapshotRelation[];
-						};
-						++found;
+				let found = 0;
+				const files = await glob(this.schemaFilesPath('*'));
+				await Promise.all(files.map(async (file) => {
+					const collectionJson = await readFile(file, { encoding: 'utf8' });
+					const { fields, relations, ...collectionInfo } = JSON.parse(collectionJson) as Collection & {
+						fields: SnapshotField[];
+						relations: SnapshotRelation[];
+					};
+					++found;
 
-						// Only add collection if it has a meta definition (actual table or group)
-						if (collectionInfo.meta) {
-							snapshot.collections.push(collectionInfo);
-						}
-
-						for (const field of fields) {
-							snapshot.fields.push(Object.assign({ collection: collectionInfo.collection }, field));
-						}
-						for (const relation of relations) {
-							snapshot.relations.push(Object.assign({ collection: collectionInfo.collection }, relation));
-						}
+					// Only add collection if it has a meta definition (actual table or group)
+					if (collectionInfo.meta) {
+						snapshot.collections.push(collectionInfo);
 					}
 
-					if (found === 0) {
-						this.logger.error('No schema files found in schema directory');
-						return;
+					for (const field of fields) {
+						snapshot.fields.push(Object.assign({ collection: collectionInfo.collection }, field));
 					}
+					for (const relation of relations) {
+						snapshot.relations.push(Object.assign({ collection: collectionInfo.collection }, relation));
+					}
+				}));
 
-					this.logger.info(`Stitched ${found} partial schema files`);
-
-					snapshot.collections.sort((a, b) => a.collection.localeCompare(b.collection));
-					// Sort non-table collections to the start
-					snapshot.collections.sort((a, b) => String(!!a.schema).localeCompare(String(!!b.schema)));
-
-					// Sort fields and relations by collection
-					snapshot.fields.sort((a, b) => a.collection.localeCompare(b.collection));
-					snapshot.relations.sort((a, b) => a.collection.localeCompare(b.collection));
-				}
-
-				const currentSnapshot = await svc.snapshot();
-				const currentHash = svc.getHashedSnapshot(currentSnapshot).hash;
-				if (currentHash === hash) {
-					this.logger.debug('Schema is already up-to-date');
+				if (found === 0) {
+					this.logger.error('No schema files found in schema directory');
 					return;
 				}
-				const diff = await svc.diff(snapshot, { currentSnapshot, force: true });
-				if (diff !== null) {
-					await svc.apply({ diff, hash: currentHash });
-				}
+
+				this.logger.info(`Stitched ${found} partial schema files`);
+
+				snapshot.collections.sort((a, b) => a.collection.localeCompare(b.collection));
+				// Sort non-table collections to the start
+				snapshot.collections.sort((a, b) => String(!!a.schema).localeCompare(String(!!b.schema)));
+
+				// Sort fields and relations by collection
+				snapshot.fields.sort((a, b) => a.collection.localeCompare(b.collection));
+				snapshot.relations.sort((a, b) => a.collection.localeCompare(b.collection));
+			}
+
+			const currentSnapshot = await svc.snapshot();
+			const currentHash = svc.getHashedSnapshot(currentSnapshot).hash;
+			if (currentHash === hash) {
+				this.logger.debug('Schema is already up-to-date');
+				return;
+			}
+			const diff = await svc.diff(snapshot, { currentSnapshot, force: true });
+			if (diff !== null) {
+				await svc.apply({ diff, hash: currentHash });
 			}
 		}
 	};
@@ -170,10 +171,11 @@ export class SchemaExporter implements IExporter {
 			await writeFile(this._filePath, schemaJson);
 
 			// Save all collections with fields as individual files
-			for (const [collection, item] of Object.entries(map)) {
-				const itemJson = JSON.stringify(item, null, 2);
-				await writeFile(this.schemaFilesPath(collection), itemJson);
-			}
+			await Promise.all(
+				Object.entries(map).map(([collection, item]) =>
+					writeFile(this.schemaFilesPath(collection), JSON.stringify(item, null, 2))
+				)
+			);
 		} else {
 			const schemaJson = JSON.stringify(Object.assign({ hash }, snapshot), null, 2);
 			await writeFile(this._filePath, schemaJson);

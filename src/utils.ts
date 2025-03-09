@@ -60,7 +60,7 @@ export class ExportHelper {
 	}
 
 	static async getExportMeta() {
-		if (await this.fileExists(this.hashFile)) {
+		try {
 			const content = await readFile(this.hashFile, { encoding: 'utf8' });
 			const [hash, ts] = content.split('@');
 
@@ -70,8 +70,9 @@ export class ExportHelper {
 					ts,
 				};
 			}
+		} catch {
+			// ignore
 		}
-
 		return null;
 	}
 }

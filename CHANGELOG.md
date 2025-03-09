@@ -1,4 +1,8 @@
-# Version 3.0.7
+# Version 3.0.8
+
+  - **Fixed** Slight performance improvement when importing data.
+
+## Version 3.0.7
 
   - **Fixed** SCHEMA_SYNC_DATA_ONLY being the opposite of what it should be.
 
