@@ -10,8 +10,11 @@ export function nodeImport(dir: string, file: string) {
 }
 
 export class ExportHelper {
+
+	static environment = 'default';
+
 	static get schemaDir() {
-		return resolve(process.cwd(), 'schema-sync');
+		return resolve(process.cwd(), 'schema-sync',this.environment);
 	}
 
 	static get dataDir() {
