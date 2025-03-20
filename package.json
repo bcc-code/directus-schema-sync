@@ -36,7 +36,6 @@
 		"release-channel": "node ./scripts/release-channel.js"
 	},
 	"devDependencies": {
-		"@directus/api": "^22.0.0",
 		"@directus/extensions": "^3.0.0",
 		"@directus/extensions-sdk": "^12.1.3",
 		"@directus/types": "^13.0.0",
