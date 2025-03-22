@@ -1,5 +1,6 @@
 import type { HookConfig } from '@directus/extensions';
 import type { SchemaOverview } from '@directus/types';
+import { getFlowManager } from '@directus/api/flows';
 import { condenseAction } from './condenseAction';
 import { copyConfig } from './copyConfig';
 import { ExportManager } from './exportManager';
@@ -96,6 +97,11 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 		}
 	}
 
+	async function reloadDirectusModules() {
+		const flowManager = getFlowManager();
+		await flowManager.reload();
+	}
+
 	// LOAD EXPORTED SCHEMAS & COLLECTIONS
 	if (env.SCHEMA_SYNC === 'BOTH' || env.SCHEMA_SYNC === 'IMPORT') {
 		init('app.before', async () => {
@@ -116,6 +122,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 				await updateManager.releaseLock();
 			} finally {
 				await attachExporters();
+				await reloadDirectusModules();
 			}
 		});
 	} else {
