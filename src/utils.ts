@@ -26,7 +26,7 @@ export class ExportHelper {
 		return isoTimestamp.replace('T', ' ').replace(/\.\d*Z/, '');
 	}
 
-	static async updateExportMeta(currentHash = '') {
+	static async updateExportMeta() {
 		const hasher = createHash('sha256');
 		const files = await readdir(ExportHelper.dataDir);
 		for (const file of files) {
@@ -37,8 +37,10 @@ export class ExportHelper {
 		}
 		const hash = hasher.digest('hex');
 
+		const { hash: previousHash } = await ExportHelper.getExportMeta() || {};
+
 		// Only update hash file if it has changed
-		if (hash === currentHash) return false;
+		if (hash === previousHash) return false;
 
 		const ts = ExportHelper.utcTS();
 		const txt = hash + '@' + ts;
