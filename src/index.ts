@@ -1,3 +1,4 @@
+import { getFlowManager } from '@directus/api/flows';
 import type { HookConfig } from '@directus/extensions';
 import type { SchemaOverview } from '@directus/types';
 import { condenseAction } from './condenseAction';
@@ -96,6 +97,11 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 		}
 	}
 
+	async function reloadDirectusModules() {
+		const flowManager = getFlowManager();
+		await flowManager.reload();
+	}
+
 	// LOAD EXPORTED SCHEMAS & COLLECTIONS
 	if (env.SCHEMA_SYNC === 'BOTH' || env.SCHEMA_SYNC === 'IMPORT') {
 		init('app.before', async () => {
@@ -110,6 +116,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 				await updateManager.commitUpdates();
 				clearAdminSchema();
+				reloadDirectusModules();
 			} catch (e) {
 				logger.error(e);
 				logger.info('Releasing lock...');
