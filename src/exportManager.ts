@@ -6,7 +6,10 @@ import { ExportCollectionConfig, IExporterConfig, IGetItemsService } from './typ
 export class ExportManager {
 	protected exporters: IExporterConfig[] = [];
 
-	constructor(protected logger: ApiExtensionContext['logger']) {}
+	constructor(
+		protected path: string,
+		protected logger: ApiExtensionContext['logger']
+	) {	}
 
 	// FIRST: Add exporters
 	public addExporter(exporterConfig: IExporterConfig) {
@@ -15,7 +18,10 @@ export class ExportManager {
 
 	public addCollectionExporter(config: ExportCollectionConfig, getItemsService: IGetItemsService) {
 		for (let collectionName in config) {
-			const opts = config[collectionName]!;
+			const opts = {
+				...config[collectionName]!,
+				path: this.path
+			};
 			this.exporters.push({
 				watch: opts.watch,
 				exporter: new CollectionExporter(collectionName, getItemsService, opts, this.logger),

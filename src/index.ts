@@ -4,15 +4,17 @@ import type { SchemaOverview } from '@directus/types';
 import { condenseAction } from './condenseAction';
 import { copyConfig } from './copyConfig';
 import { ExportManager } from './exportManager';
+import { ExportMeta } from './exportMeta.js';
 import { SchemaExporter } from './schemaExporter';
 import type { ExportCollectionConfig, IGetItemsService, ItemsService } from './types';
 import { UpdateManager } from './updateManager';
-import { ADMIN_ACCOUNTABILITY, ExportHelper, nodeImport } from './utils';
+import { ADMIN_ACCOUNTABILITY, nodeImport } from './utils';
 
 const registerHook: HookConfig = async ({ action, init }, { env, services, database, getSchema, logger }) => {
 	const { SchemaService, ItemsService } = services;
 
-	const schemaOptions = {
+	const schemaExportOptions = {
+		path: env.SCHEMA_SYNC_PATH,
 		split: typeof env.SCHEMA_SYNC_SPLIT === 'boolean' ? env.SCHEMA_SYNC_SPLIT : true,
 	};
 
@@ -37,21 +39,22 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 	// We need to do this in async in order to load the config files
 	let _exportManager: ExportManager;
+	const exportMeta = new ExportMeta(env.SCHEMA_SYNC_PATH);
 
 	const createExportManager = async (dataOnly = false) => {
-		const exportMng = new ExportManager(logger);
+		const exportMng = new ExportManager(env.SCHEMA_SYNC_PATH, logger);
 
 		if (!dataOnly) {
 			exportMng.addExporter({
 				watch: ['collections', 'fields', 'relations'],
-				exporter: new SchemaExporter(getSchemaService, logger, schemaOptions),
+				exporter: new SchemaExporter(getSchemaService, logger, schemaExportOptions),
 			});
 		}
 
-		const { syncDirectusCollections } = (await nodeImport(ExportHelper.schemaDir, 'directus_config.js')) as {
+		const { syncDirectusCollections } = (await nodeImport(exportMeta.schemaDir, 'directus_config.js')) as {
 			syncDirectusCollections: ExportCollectionConfig;
 		};
-		const { syncCustomCollections } = (await nodeImport(ExportHelper.schemaDir, 'config.js')) as {
+		const { syncCustomCollections } = (await nodeImport(exportMeta.schemaDir, 'config.js')) as {
 			syncCustomCollections: ExportCollectionConfig;
 		};
 		exportMng.addCollectionExporter(syncDirectusCollections, getItemsService);
@@ -59,7 +62,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 		// Additional config
 		if (env.SCHEMA_SYNC_CONFIG) {
-			const { syncCustomCollections } = (await nodeImport(ExportHelper.schemaDir, env.SCHEMA_SYNC_CONFIG)) as {
+			const { syncCustomCollections } = (await nodeImport(exportMeta.schemaDir, env.SCHEMA_SYNC_CONFIG)) as {
 				syncCustomCollections: ExportCollectionConfig;
 			};
 			if (syncCustomCollections) {
@@ -71,7 +74,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 		return exportMng;
 	}
-		
+
 	const exportManager = async (dataOnly = false) => {
 		if (dataOnly && env.SCHEMA_SYNC_DATA_ONLY !== true) {
 			return await createExportManager(true);
@@ -85,7 +88,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	};
 
 	const updateMeta = condenseAction(async (saveToDb = true) => {
-		const meta = await ExportHelper.updateExportMeta();
+		const meta = await exportMeta.updateExportMeta();
 		if (saveToDb && meta && (await updateManager.lockForUpdates(meta.hash, meta.ts))) {
 			await updateManager.commitUpdates();
 		}
@@ -106,7 +109,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	if (env.SCHEMA_SYNC === 'BOTH' || env.SCHEMA_SYNC === 'IMPORT') {
 		init('app.before', async () => {
 			try {
-				const meta = await ExportHelper.getExportMeta();
+				const meta = await exportMeta.getExportMeta();
 				if (!meta) return logger.info('Nothing exported yet it seems');
 				if (!(await updateManager.lockForUpdates(meta.hash, meta.ts))) return; // Schema is locked / no change, nothing to do
 
@@ -141,7 +144,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 				const exportSchema = new SchemaExporter(
 					getSchemaService,
 					logger,
-					args && 'split' in args ? args : schemaOptions
+					args && 'split' in args ? args : schemaExportOptions
 				);
 				await exportSchema.export();
 
@@ -156,10 +159,10 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 			.description('Import only the schema file')
 			.action(async () => {
 				logger.info('Importing schema...');
-				const meta = await ExportHelper.getExportMeta();
+				const meta = await exportMeta.getExportMeta();
 				if (!meta) return logger.info('Nothing exported yet it seems');
 
-				const exportSchema = new SchemaExporter(getSchemaService, logger, schemaOptions);
+				const exportSchema = new SchemaExporter(getSchemaService, logger, schemaExportOptions);
 				await exportSchema.load();
 
 				await updateManager.forceCommitUpdates(meta.hash, meta.ts);
@@ -198,7 +201,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 			.option('--data', 'Only import data and not schema')
 			.action(async ({ merge, data }: { merge: boolean; data: boolean }) => {
 				try {
-					logger.info(`Importing everything from: ${ExportHelper.dataDir}`);
+					logger.info(`Importing everything from: ${exportMeta.dataDir}`);
 					const expMng = await exportManager(data);
 					await expMng.loadAll(merge);
 
@@ -215,7 +218,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 			.description('Export the schema and all data as configured from DB to file')
 			.action(async () => {
 				try {
-					logger.info(`Exporting everything to: ${ExportHelper.dataDir}`);
+					logger.info(`Exporting everything to: ${exportMeta.dataDir}`);
 					const expMng = await exportManager();
 					await expMng.exportAll();
 

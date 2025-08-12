@@ -1,5 +1,4 @@
 import type { Knex } from 'knex';
-import { ExportHelper } from './utils';
 
 export class UpdateManager {
 	protected db: Knex;

@@ -41,6 +41,9 @@ export type CollectionExporterOptions = {
 	// Specify additional query options to filter, sort and limit the exported items
 	query?: Pick<Query, 'filter' | 'sort' | 'limit'>;
 
+	// Path to the export folder
+	path?: string,
+
 	// Prefix to add to the exported file name
 	prefix?: string;
 	onExport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
