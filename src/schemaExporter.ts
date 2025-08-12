@@ -5,10 +5,12 @@ import { readFile, writeFile, mkdir, rm } from 'fs/promises';
 import { glob } from 'glob';
 import { condenseAction } from './condenseAction.js';
 import { exportHook } from './schemaExporterHooks.js';
+import { ExportMeta } from './exportMeta.js';
 import type { IExporter } from './types';
-import { ExportHelper } from './utils.js';
+import { fileExists } from './utils.js';
 
 export class SchemaExporter implements IExporter {
+	protected _exportMeta: ExportMeta;
 	protected _filePath: string;
 	protected _getSchemaService: () => any;
 	protected _exportHandler = condenseAction(() => this.createAndSaveSnapshot());
@@ -17,15 +19,22 @@ export class SchemaExporter implements IExporter {
 	constructor(
 		getSchemaService: () => any,
 		protected logger: ApiExtensionContext['logger'],
-		protected options = { split: true }
+		protected options = {
+			path: undefined,
+			split: true
+		} as {
+			path?: string,
+			split?: boolean
+		}
 	) {
 		this._getSchemaService = () => getSchemaService();
-		this._filePath = `${ExportHelper.dataDir}/schema.json`;
+		this._exportMeta = new ExportMeta(options.path);
+		this._filePath = `${this._exportMeta.dataDir}/schema.json`;
 	}
 
 	protected ensureSchemaFilesDir = async () => {
-		if (!(await ExportHelper.fileExists(`${ExportHelper.dataDir}/schema`))) {
-			await mkdir(`${ExportHelper.dataDir}/schema`, { recursive: true });
+		if (!(await fileExists(`${this._exportMeta.dataDir}/schema`))) {
+			await mkdir(`${this._exportMeta.dataDir}/schema`, { recursive: true });
 		} else {
 			// Clean up old schema files
 			const files = await glob(this.schemaFilesPath('*'));
@@ -34,7 +43,7 @@ export class SchemaExporter implements IExporter {
 	};
 
 	protected schemaFilesPath(collection: string) {
-		return `${ExportHelper.dataDir}/schema/${collection}.json`;
+		return `${this._exportMeta.dataDir}/schema/${collection}.json`;
 	}
 
 	get name() {

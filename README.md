@@ -59,7 +59,7 @@ volumes:
 (re)Build and run your container.
 
 Once it is running, run the following command (from host) to install the extension's columns in the database and add the config folder.
-	
+
  	Replace the `my-directus` with the name of your service running directus if it is different
 
 ```bash
@@ -125,6 +125,7 @@ onImport: async (item, itemsSrv) => {
 | Variable | Description | Default |
 | -------- | ----------- | ------- |
 | `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
+| `SCHEMA_SYNC_PATH` | Path to the `schema-sync` folder | (Directus root)/schema-sync |
 | `SCHEMA_SYNC_CONFIG` | (optional) An additional config file to use in addition, eg. `test_config.js` | `null` |
 | `SCHEMA_SYNC_SPLIT` | (optional) Splits the schema file into multiple files once per collection | `true` |
 | `SCHEMA_SYNC_MERGE` | (optional) Only insert and update items found in the import set (including duplicates). Does not remove items in the DB that are not in the import set. | `false` |
@@ -151,7 +152,7 @@ Besides auto importing and exporting, you can also run the commands manually.
 Update the `schema-sync/directus_config.js` file with the following:
 
 Replace `directus_roles`
-Add `directus_policies` 
+Add `directus_policies`
 Replace `directus_permissions`
 Add `directus_access`
 

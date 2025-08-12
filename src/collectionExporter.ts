@@ -3,7 +3,8 @@ import type { ApiExtensionContext } from '@directus/extensions';
 import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { condenseAction } from './condenseAction.js';
 import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, ToUpdateItemDiff } from './types';
-import { ExportHelper, getDiff, sortObject } from './utils.js';
+import { ExportMeta } from './exportMeta.js';
+import { getDiff, sortObject, fileExists } from './utils.js';
 import { glob } from 'glob';
 
 type PARTIAL_CONFIG = { count: number; groupedBy: string[]; partial: true };
@@ -18,6 +19,7 @@ const DEFAULT_COLLECTION_EXPORTER_OPTIONS: CollectionExporterOptions = {
 
 class CollectionExporter implements IExporter {
 	protected _getService: () => Promise<ItemsService>;
+	protected _exportMeta: ExportMeta;
 	protected collection: string;
 
 	protected options: CollectionExporterOptions;
@@ -44,13 +46,14 @@ class CollectionExporter implements IExporter {
 
 		this.collection = collectionName;
 
+		this._exportMeta = new ExportMeta(options.path);
 		const fileName = this.options.prefix ? `${this.options.prefix}_${collectionName}` : collectionName;
-		this.filePath = `${ExportHelper.dataDir}/${fileName}.json`;
+		this.filePath = `${this._exportMeta.dataDir}/${fileName}.json`;
 	}
 
 	protected ensureCollectionGroupDir = async () => {
-		if (!(await ExportHelper.fileExists(`${ExportHelper.dataDir}/${this.collection}`))) {
-			await mkdir(`${ExportHelper.dataDir}/${this.collection}`, { recursive: true });
+		if (!(await fileExists(`${this._exportMeta.dataDir}/${this.collection}`))) {
+			await mkdir(`${this._exportMeta.dataDir}/${this.collection}`, { recursive: true });
 		} else {
 			// Clean up old files
 			const files = await glob(this.groupedFilesPath('*'));
@@ -71,7 +74,7 @@ class CollectionExporter implements IExporter {
 
 	protected groupedFilesPath(fileName: string) {
 		fileName = `${this.options.prefix || '_'}_${fileName}`;
-		return `${ExportHelper.dataDir}/${this.collection}/${fileName}.json`;
+		return `${this._exportMeta.dataDir}/${this.collection}/${fileName}.json`;
 	}
 
 	get name() {
@@ -100,7 +103,7 @@ class CollectionExporter implements IExporter {
 			throw new Error(`Collection ${this.name} has invalid JSON: ${json}`);
 		}
 
-		return await this.loadGroupedItems(parsedJSON, merge);		
+		return await this.loadGroupedItems(parsedJSON, merge);
 	}
 
 	protected exportCollectionToFile = async () => {
