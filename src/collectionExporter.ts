@@ -208,14 +208,12 @@ class CollectionExporter implements IExporter {
 
 		// If groupBy is set, group the json by the specified fields
 		if (this.options.groupBy?.length) {
-			const groupedItems = items.reduce((map, item) => {
+			return items.reduce((map, item) => {
 				const key = this.itemGroupFilename(item);
-				if (!map[key]) map[key] = [];
-				map[key].push(item);
+				map[key] ||= [];
+				map[key].push(item);	
 				return map;
 			}, {} as Record<string, Array<Item>>);
-
-			return groupedItems;
 		}
 
 		return items;
