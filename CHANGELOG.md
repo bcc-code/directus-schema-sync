@@ -1,4 +1,9 @@
-# Version 3.0.8
+# Version 3.1.0
+
+  - **Updated** Packages and build.
+  - **Added** More logging for schema import
+
+## Version 3.0.8
 
   - **Fixed** Slight performance improvement when importing data.
 

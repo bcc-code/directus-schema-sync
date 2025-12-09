@@ -1,9 +1,17 @@
+import { Accountability } from '@directus/types';
 import { createHash } from 'crypto';
 import { access, readFile, readdir, writeFile } from 'fs/promises';
 import { resolve } from 'path';
 import { pathToFileURL } from 'url';
 
-export const ADMIN_ACCOUNTABILITY = { role: '', admin: true };
+export const ADMIN_ACCOUNTABILITY: Accountability = {
+	admin: true,
+	role: '',
+	roles: [],
+	user: null,
+	app: false,
+	ip: null
+};
 
 export function nodeImport(dir: string, file: string) {
 	return import(pathToFileURL(resolve(dir, file)).href);

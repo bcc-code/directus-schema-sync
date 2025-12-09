@@ -1,10 +1,10 @@
-import { Item, PrimaryKey, Query } from '@directus/types';
 import type { ApiExtensionContext } from '@directus/extensions';
+import { Item, PrimaryKey, Query } from '@directus/types';
 import { mkdir, readFile, rm, writeFile } from 'fs/promises';
-import { condenseAction } from './condenseAction.js';
-import type { CollectionExporterOptions, IExporter, IGetItemsService, ItemsService, ToUpdateItemDiff } from './types';
-import { ExportHelper, getDiff, sortObject } from './utils.js';
 import { glob } from 'glob';
+import { condenseAction } from './condenseAction.js';
+import type { CollectionExporterOptions, IExporter, IGetItemsService, IItemsService, ToUpdateItemDiff } from './types';
+import { ExportHelper, getDiff, sortObject } from './utils.js';
 
 type PARTIAL_CONFIG = { count: number; groupedBy: string[]; partial: true };
 
@@ -17,7 +17,7 @@ const DEFAULT_COLLECTION_EXPORTER_OPTIONS: CollectionExporterOptions = {
 };
 
 class CollectionExporter implements IExporter {
-	protected _getService: () => Promise<ItemsService>;
+	protected _getService: () => Promise<IItemsService>;
 	protected collection: string;
 
 	protected options: CollectionExporterOptions;
@@ -39,7 +39,7 @@ class CollectionExporter implements IExporter {
 			...otherOpts,
 		};
 
-		let srv: ItemsService;
+		let srv: IItemsService;
 		this._getService = async () => srv || (srv = await getItemsService(collectionName));
 
 		this.collection = collectionName;

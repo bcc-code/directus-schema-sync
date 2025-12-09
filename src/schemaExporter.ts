@@ -10,12 +10,12 @@ import { ExportHelper } from './utils.js';
 
 export class SchemaExporter implements IExporter {
 	protected _filePath: string;
-	protected _getSchemaService: () => any;
+	protected _getSchemaService: () => Promise<any>;
 	protected _exportHandler = condenseAction(() => this.createAndSaveSnapshot());
 
 	// Directus SchemaService, database and getSchema
 	constructor(
-		getSchemaService: () => any,
+		getSchemaService: () => Promise<any>,
 		protected logger: ApiExtensionContext['logger'],
 		protected options = { split: true }
 	) {
@@ -47,7 +47,7 @@ export class SchemaExporter implements IExporter {
 	 * Import the schema from file to the database
 	 */
 	public load = async () => {
-		const svc = this._getSchemaService();
+		const svc = await this._getSchemaService();
 		let json;
 		try {
 			json = await readFile(this._filePath, { encoding: 'utf8' });
@@ -110,7 +110,7 @@ export class SchemaExporter implements IExporter {
 			const currentSnapshot = await svc.snapshot();
 			const currentHash = svc.getHashedSnapshot(currentSnapshot).hash;
 			if (currentHash === hash) {
-				this.logger.debug('Schema is already up-to-date');
+				this.logger.info('Schema is already up-to-date');
 				return;
 			}
 

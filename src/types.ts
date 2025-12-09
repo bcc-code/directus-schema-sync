@@ -1,10 +1,10 @@
-import type { Accountability, Item, PrimaryKey, Query, SchemaOverview } from '@directus/types';
+import type { AbstractService, Accountability, Item, PrimaryKey, Query, SchemaOverview } from '@directus/types';
 import type Keyv from 'keyv';
 import type { Knex } from 'knex';
 
 export type JSONString = string;
 
-export type IGetItemsService = (collectionName: string) => Promise<ItemsService>;
+export type IGetItemsService = (collectionName: string) => Promise<IItemsService>;
 
 export interface IExporter {
 	name: string;
@@ -43,8 +43,8 @@ export type CollectionExporterOptions = {
 
 	// Prefix to add to the exported file name
 	prefix?: string;
-	onExport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
-	onImport?: (item: Item, srv: ItemsService) => Promise<Item | null>;
+	onExport?: (item: Item, srv: IItemsService) => Promise<Item | null>;
+	onImport?: (item: Item, srv: IItemsService) => Promise<Item | null>;
 };
 
 export type ToUpdateItemDiff = {
@@ -58,7 +58,7 @@ export type ToUpdateItemDiff = {
 export type MutationOptions = {
 	emitEvents?: boolean;
 };
-export interface ItemsService {
+export interface IItemsService extends AbstractService<Item> {
 	collection: string;
 	knex: Knex;
 	accountability: Accountability | null;

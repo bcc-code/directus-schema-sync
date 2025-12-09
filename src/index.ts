@@ -5,7 +5,7 @@ import { condenseAction } from './condenseAction';
 import { copyConfig } from './copyConfig';
 import { ExportManager } from './exportManager';
 import { SchemaExporter } from './schemaExporter';
-import type { ExportCollectionConfig, IGetItemsService, ItemsService } from './types';
+import type { ExportCollectionConfig, IGetItemsService, IItemsService } from './types';
 import { UpdateManager } from './updateManager';
 import { ADMIN_ACCOUNTABILITY, ExportHelper, nodeImport } from './utils';
 
@@ -21,8 +21,9 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 		schema ||
 		(schema = await getSchema({ database }));
 	const clearAdminSchema = () => (schema = null);
-	const getSchemaService = () =>
+	const getSchemaService = async () =>
 		new SchemaService({
+			schema: await getAdminSchema(),
 			knex: database,
 			accountability: ADMIN_ACCOUNTABILITY,
 		});
@@ -31,7 +32,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 			schema: await getAdminSchema(),
 			accountability: ADMIN_ACCOUNTABILITY,
 			knex: database,
-		}) as ItemsService;
+		}) as IItemsService;
 
 	const updateManager = new UpdateManager(database);
 
