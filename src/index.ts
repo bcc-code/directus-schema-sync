@@ -116,7 +116,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 				await updateManager.commitUpdates();
 				clearAdminSchema();
-				reloadDirectusModules();
+				await reloadDirectusModules();
 			} catch (e) {
 				logger.error(e);
 				logger.info('Releasing lock...');

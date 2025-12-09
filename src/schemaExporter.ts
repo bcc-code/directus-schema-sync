@@ -1,7 +1,7 @@
 import type { Snapshot, SnapshotField, SnapshotRelation } from '@directus/api/dist/types';
 import type { ApiExtensionContext } from '@directus/extensions';
 import { Collection } from '@directus/types';
-import { readFile, writeFile, mkdir, rm } from 'fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import { condenseAction } from './condenseAction.js';
 import { exportHook } from './schemaExporterHooks.js';
@@ -113,9 +113,13 @@ export class SchemaExporter implements IExporter {
 				this.logger.debug('Schema is already up-to-date');
 				return;
 			}
+
+			this.logger.info(`Diffing schema with hash: ${currentHash} and hash: ${hash}`);
 			const diff = await svc.diff(snapshot, { currentSnapshot, force: true });
 			if (diff !== null) {
+				this.logger.info(`Applying schema diff...`);
 				await svc.apply({ diff, hash: currentHash });
+				this.logger.info(`Schema updated`);
 			}
 		}
 	};

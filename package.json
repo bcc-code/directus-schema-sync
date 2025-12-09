@@ -36,9 +36,9 @@
 		"release-channel": "node ./scripts/release-channel.js"
 	},
 	"devDependencies": {
-		"@directus/api": "^22.0.0",
+		"@directus/api": "^27.0.0",
 		"@directus/extensions": "^3.0.0",
-		"@directus/extensions-sdk": "^12.1.3",
+		"@directus/extensions-sdk": "^13.0.0",
 		"@directus/types": "^13.0.0",
 		"@types/keyv": "^4.2.0",
 		"@types/node": "^20.14.15",
