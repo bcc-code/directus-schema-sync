@@ -1,4 +1,4 @@
-import { getFlowManager } from '@directus/api/flows';
+import { useBus } from '@directus/api/bus/index';
 import type { HookConfig } from '@directus/extensions';
 import type { SchemaOverview } from '@directus/types';
 import { condenseAction } from './condenseAction';
@@ -99,8 +99,10 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	}
 
 	async function reloadDirectusModules() {
-		const flowManager = getFlowManager();
-		await flowManager.reload();
+		const messenger = useBus();
+		if (!messenger) return;
+
+		messenger.publish('flows', { type: 'reload' });
 	}
 
 	// LOAD EXPORTED SCHEMAS & COLLECTIONS

@@ -1,5 +1,5 @@
 import type { ApiExtensionContext } from '@directus/extensions';
-import { Item, PrimaryKey, Query } from '@directus/types';
+import type { Item, PrimaryKey, Query } from '@directus/types';
 import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import { condenseAction } from './condenseAction.js';

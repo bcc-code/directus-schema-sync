@@ -1,4 +1,4 @@
-import { Accountability } from '@directus/types';
+import type { Accountability } from '@directus/types';
 import { createHash } from 'crypto';
 import { access, readFile, readdir, writeFile } from 'fs/promises';
 import { resolve } from 'path';

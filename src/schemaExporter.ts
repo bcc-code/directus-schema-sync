@@ -1,6 +1,6 @@
 import type { Snapshot, SnapshotField, SnapshotRelation } from '@directus/api/dist/types';
 import type { ApiExtensionContext } from '@directus/extensions';
-import { Collection } from '@directus/types';
+import type { Collection, ExtensionsServices } from '@directus/types';
 import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import { condenseAction } from './condenseAction.js';
@@ -10,16 +10,14 @@ import { ExportHelper } from './utils.js';
 
 export class SchemaExporter implements IExporter {
 	protected _filePath: string;
-	protected _getSchemaService: () => Promise<any>;
 	protected _exportHandler = condenseAction(() => this.createAndSaveSnapshot());
 
 	// Directus SchemaService, database and getSchema
 	constructor(
-		getSchemaService: () => Promise<any>,
+		protected getSchemaService: () => Promise<InstanceType<ExtensionsServices['SchemaService']>>,
 		protected logger: ApiExtensionContext['logger'],
 		protected options = { split: true }
 	) {
-		this._getSchemaService = () => getSchemaService();
 		this._filePath = `${ExportHelper.dataDir}/schema.json`;
 	}
 
@@ -47,7 +45,7 @@ export class SchemaExporter implements IExporter {
 	 * Import the schema from file to the database
 	 */
 	public load = async () => {
-		const svc = await this._getSchemaService();
+		const svc = await this.getSchemaService();
 		let json;
 		try {
 			json = await readFile(this._filePath, { encoding: 'utf8' });
@@ -128,7 +126,7 @@ export class SchemaExporter implements IExporter {
 	 * Create and save the schema snapshot to file
 	 */
 	protected createAndSaveSnapshot = async () => {
-		const svc = this._getSchemaService();
+		const svc = await this.getSchemaService();
 		let snapshot = (await svc.snapshot()) as Snapshot;
 		snapshot = exportHook(snapshot);
 		let hash = svc.getHashedSnapshot(snapshot).hash;

@@ -1,4 +1,8 @@
-# Version 3.1.0
+# Version 3.1.1
+
+  - **Fixed** Snapshot undefined issue
+
+## Version 3.1.0
 
   - **Updated** Packages and build.
   - **Added** More logging for schema import

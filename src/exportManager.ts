@@ -1,5 +1,5 @@
-import { ActionHandler } from '@directus/types';
 import type { ApiExtensionContext } from '@directus/extensions';
+import type { ActionHandler } from '@directus/types';
 import { CollectionExporter } from './collectionExporter.js';
 import { ExportCollectionConfig, IExporterConfig, IGetItemsService } from './types';
 
