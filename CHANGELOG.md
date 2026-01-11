@@ -1,6 +1,7 @@
 # Version 3.1.1
 
   - **Fixed** Snapshot undefined issue
+  - **Fixed** Docker installation crash due to isolated-vm native module bundling
 
 ## Version 3.1.0
 
