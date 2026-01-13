@@ -7,6 +7,6 @@ export default {
 			peerDependencies: true,
 		}),
 	],
-	// Exclude @directus/api peer dependency and its submodules
+	// Exclude native modules that cannot be bundled
 	external: [/^@directus\/api/],
 };

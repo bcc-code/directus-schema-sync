@@ -1,4 +1,9 @@
-# Version 3.1.1
+# Version 3.1.2
+
+  - **Updated** Default `directus_config.js` with sorting for consistent exports
+  - **Fixed** Build to exclude external `@directus/api` libs causing module not found error in docker container
+
+## Version 3.1.1
 
   - **Fixed** Snapshot undefined issue
   - **Fixed** Docker installation crash due to isolated-vm native module bundling

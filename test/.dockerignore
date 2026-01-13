@@ -1,0 +1,17 @@
+node_modules
+dist
+.git
+.gitignore
+*.md
+*.png
+*.json
+!package.json
+!package-lock.json
+!extension.config.js
+!tsconfig.json
+.vscode
+.idea
+dist-test
+*.test.ts
+scripts
+test
