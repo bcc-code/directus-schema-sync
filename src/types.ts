@@ -42,7 +42,7 @@ export type CollectionExporterOptions = {
 	query?: Pick<Query, 'filter' | 'sort' | 'limit'>;
 
 	// Path to the export folder
-	path?: string,
+	path?: string;
 
 	// Prefix to add to the exported file name
 	prefix?: string;
