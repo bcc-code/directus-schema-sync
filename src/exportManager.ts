@@ -7,7 +7,7 @@ export class ExportManager {
 	protected exporters: IExporterConfig[] = [];
 
 	constructor(
-		protected path: string,
+		protected path: string | undefined,
 		protected logger: ApiExtensionContext['logger']
 	) {}
 
