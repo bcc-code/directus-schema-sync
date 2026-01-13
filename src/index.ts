@@ -133,6 +133,10 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	}
 
 	init('cli.before', async ({ program }) => {
+		if (program.commands.some(cmd => cmd.name() === 'schema-sync')) {
+			logger.info('Already registered "schema-sync" command');
+			return;
+		}
 		const dbCommand = program.command('schema-sync');
 
 		dbCommand

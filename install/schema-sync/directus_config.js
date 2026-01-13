@@ -55,7 +55,10 @@ export const syncDirectusCollections = {
 		excludeFields: ['id'],
 		getKey: o => `${o.role ?? o.user ?? 'public'}-${o.policy}`,
 		query: {
-			sort: ['policy'],
+			sort: ['role', 'policy'],
+			filter: {
+				user: { _null: true },
+			},
 		},
 	},
 	/* directus_users: {
@@ -101,17 +104,24 @@ export const syncDirectusCollections = {
 	},
 	directus_dashboards: {
 		watch: ['dashboards'],
-		excludeFields: ['user_created', 'panels'],
+		excludeFields: ['user_created', 'date_created'],
+		query: {
+			sort: ['name'],
+		},
 	},
 	directus_panels: {
 		watch: ['panels'],
-		excludeFields: ['user_created'],
+		excludeFields: ['user_created', 'date_created'],
+		query: {
+			sort: ['dashboard', 'id'],
+		},
 	},
 	directus_presets: {
 		watch: ['presets'],
 		excludeFields: ['id'],
 		getKey: (o) => `${o.role ?? 'all'}-${o.collection}-${o.bookmark || 'default'}`,
 		query: {
+			sort: ['collection', 'bookmark'],
 			filter: {
 				user: { _null: true}
 			}
@@ -119,7 +129,7 @@ export const syncDirectusCollections = {
 	},
 	/*directus_flows: {
 		watch: ['flows'],
-		excludeFields: ['operations', 'user_created'],
+		excludeFields: ['operations', 'user_created', 'date_created'],
 		query: {
 			filter: {
 				trigger: { _neq: 'webhook' },
@@ -128,7 +138,7 @@ export const syncDirectusCollections = {
 	},
 	directus_operations: {
 		watch: ['operations'],
-		excludeFields: ['user_created'],
+		excludeFields: ['user_created', 'date_created'],
 		linkedFields: ['resolve', 'reject'],
 		query: {
 			filter: {

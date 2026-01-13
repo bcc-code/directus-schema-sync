@@ -1,0 +1,48 @@
+services:
+  directus:
+    build:
+      context: ..
+      dockerfile: test/Dockerfile
+    container_name: directus-schema-sync-test
+    ports:
+      - "8055:8055"
+    environment:
+      KEY: ${KEY:-change-me-to-a-random-value}
+      SECRET: ${SECRET:-change-me-to-a-random-value}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      DB_CLIENT: ${DB_CLIENT:-sqlite3}
+      DB_FILENAME: /directus/database/data.db
+      # Schema sync configuration
+      SCHEMA_SYNC: ${SCHEMA_SYNC:-BOTH}
+      SCHEMA_SYNC_SPLIT: ${SCHEMA_SYNC_SPLIT:-true}
+    volumes:
+      # Persist database
+      - directus-database:/directus/database
+      # Mount schema-sync data directory for persisted data files (config files come from image)
+      - ../install/schema-sync:/directus/schema-sync
+      # Optional: Mount uploads directory
+      - directus-uploads:/directus/uploads
+    restart: unless-stopped
+
+  # Optional: PostgreSQL database (uncomment to use instead of SQLite)
+  # postgres:
+  #   image: postgres:16-alpine
+  #   container_name: directus-postgres
+  #   environment:
+  #     POSTGRES_USER: directus
+  #     POSTGRES_PASSWORD: directus
+  #     POSTGRES_DB: directus
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U directus"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+volumes:
+  directus-database:
+  directus-uploads:
+  # postgres-data:
