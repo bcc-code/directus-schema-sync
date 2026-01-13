@@ -3,11 +3,11 @@ import { readFile, readdir, writeFile } from 'fs/promises';
 import { resolve } from 'path';
 
 export class ExportMeta {
-    public schemaDir: string;
+	public schemaDir: string;
 
-    constructor(schemaDir?: string) {
-        this.schemaDir = resolve(process.cwd(), schemaDir ?? 'schema-sync')
-    }
+	constructor(schemaDir?: string) {
+		this.schemaDir = resolve(process.cwd(), schemaDir ?? 'schema-sync')
+	}
 
     get dataDir() {
         return resolve(this.schemaDir, 'data');
