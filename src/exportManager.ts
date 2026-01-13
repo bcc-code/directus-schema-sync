@@ -9,7 +9,7 @@ export class ExportManager {
 	constructor(
 		protected path: string,
 		protected logger: ApiExtensionContext['logger']
-	) {	}
+	) {}
 
 	// FIRST: Add exporters
 	public addExporter(exporterConfig: IExporterConfig) {
