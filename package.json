@@ -1,6 +1,6 @@
 {
 	"name": "directus-extension-schema-sync",
-	"description": "Sync schema and data betwreen Directus instances",
+	"description": "Sync schema and data between Directus instances",
 	"icon": "sync_alt",
 	"version": "3.1.2",
 	"repository": {
