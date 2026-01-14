@@ -4,26 +4,19 @@ USER root
 RUN corepack enable
 USER node
 
-# Set working directory for extension
-WORKDIR /directus/extensions/directus-extension-schema-sync
+# Create a project .npmrc that allows specific native deps to build
+RUN printf '%s\n' \
+  'only-built-dependencies[]=argon2' \
+  'only-built-dependencies[]=better-sqlite3' \
+  'only-built-dependencies[]=canvas' \
+  'only-built-dependencies[]=esbuild' \
+  'only-built-dependencies[]=isolated-vm' \
+  'only-built-dependencies[]=oracledb' \
+  'only-built-dependencies[]=pg' \
+  'only-built-dependencies[]=sharp' \
+  'only-built-dependencies[]=sqlite3' \
+  'only-built-dependencies[]=vue-demi' \
+  > .npmrc
 
-# Copy package files (context is parent directory)
-COPY --chown=node:node package.json package-lock.json ./
-COPY --chown=node:node extension.config.js ./
-
-# Copy source files
-COPY --chown=node:node dist/ ./dist
-
-# Install the extension as a local package in the Directus node_modules
-WORKDIR /directus
-
-RUN pnpm install ./extensions/directus-extension-schema-sync
-COPY --chown=node:node install/schema-sync/ ./schema-sync
-
-RUN echo "Listing schema-sync directory:" && ls -la /directus/schema-sync
-
-ENV ADMIN_EMAIL="admin@example.com"
-ENV ADMIN_PASSWORD="admin"
-ENV DB_CLIENT="sqlite3"
-ENV DB_FILENAME="/directus/database/data.db"
-ENV SCHEMA_SYNC="NONE"
+# Install extra extensions
+RUN pnpm install directus-extension-schema-sync@3.1.2 --force
