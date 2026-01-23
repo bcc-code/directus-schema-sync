@@ -1,4 +1,8 @@
-# Version 3.1.2
+# Version 3.2.0
+
+  - **Updated** packages for Directus 11.14
+
+## Version 3.1.2
 
   - **Updated** Default `directus_config.js` with sorting for consistent exports
   - **Fixed** Build to exclude external `@directus/api` libs causing module not found error in docker container

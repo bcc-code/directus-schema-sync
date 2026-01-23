@@ -36,17 +36,17 @@
 		"release-channel": "node ./scripts/release-channel.js"
 	},
 	"devDependencies": {
-		"@directus/extensions": "^3.0.15",
-		"@directus/types": "^13.5.0",
+		"@directus/extensions": "^3.0.16",
+		"@directus/types": "^14.0.0",
 		"@types/keyv": "^4.2.0",
-		"@types/node": "^20.14.15",
+		"@types/node": "^25.0.10",
 		"rollup-plugin-exclude-dependencies-from-bundle": "^1.1.24",
-		"typescript": "^5.5.4"
+		"typescript": "^5.8.2"
 	},
 	"dependencies": {
 		"glob": "^10.4.5"
 	},
 	"peerDependencies": {
-		"@directus/api": "^32.0.0"
+		"@directus/api": "^33.0.0"
 	}
 }
