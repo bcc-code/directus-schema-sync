@@ -14,6 +14,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 	const schemaOptions = {
 		split: typeof env.SCHEMA_SYNC_SPLIT === 'boolean' ? env.SCHEMA_SYNC_SPLIT : true,
+		safe: !!env.SCHEMA_SYNC_SAFE,
 	};
 
 	let schema: SchemaOverview | null;
