@@ -1,4 +1,3 @@
-import { useBus } from '@directus/api/bus/index';
 import type { HookConfig } from '@directus/extensions';
 import type { SchemaOverview } from '@directus/types';
 import { condenseAction } from './condenseAction';
@@ -14,6 +13,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 	const schemaOptions = {
 		split: typeof env.SCHEMA_SYNC_SPLIT === 'boolean' ? env.SCHEMA_SYNC_SPLIT : true,
+		safe: !!env.SCHEMA_SYNC_SAFE,
 	};
 
 	let schema: SchemaOverview | null;
@@ -99,10 +99,14 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	}
 
 	async function reloadDirectusModules() {
-		const messenger = useBus();
-		if (!messenger) return;
-
-		messenger.publish('flows', { type: 'reload' });
+		try {
+			const { useBus } = await import('@directus/api/bus/index');
+			const messenger = useBus();
+			if (!messenger) return;
+			messenger.publish('flows', { type: 'reload' });
+		} catch {
+			// not available in volume extension context — skip
+		}
 	}
 
 	// LOAD EXPORTED SCHEMAS & COLLECTIONS
