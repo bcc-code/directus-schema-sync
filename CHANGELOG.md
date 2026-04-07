@@ -1,6 +1,7 @@
-## Version 3.3.0
+# Version 3.3.1
 
   - **Updated & Fixed** For Directus 11.17
+  - **Added** `SCHEMA_SYNC_SAFE` - (optional) Safe mode for schema import. Filters destructive diff operations (deletes), so project-specific collections/fields/relations are not removed.
 
 ## Version 3.2.0
 
