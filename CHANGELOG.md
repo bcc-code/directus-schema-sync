@@ -1,4 +1,8 @@
-# Version 3.2.0
+## Version 3.3.0
+
+  - **Updated & Fixed** For Directus 11.17
+
+## Version 3.2.0
 
   - **Updated** packages for Directus 11.14
 
