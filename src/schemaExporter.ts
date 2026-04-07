@@ -1,11 +1,39 @@
 import type { ApiExtensionContext } from '@directus/extensions';
-import type { Collection, ExtensionsServices, Snapshot, SnapshotField, SnapshotRelation } from '@directus/types';
+import type { Collection, ExtensionsServices, Snapshot, SnapshotDiff, SnapshotField, SnapshotRelation } from '@directus/types';
 import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import { condenseAction } from './condenseAction.js';
 import { exportHook } from './schemaExporterHooks.js';
 import type { IExporter } from './types';
 import { ExportHelper } from './utils.js';
+
+/**
+ * Removes all destructive (DELETE) operations from a schema diff.
+ * Used with SCHEMA_SYNC_SAFE=true to prevent project-specific collections,
+ * fields, and relations from being dropped when importing a base snapshot.
+ */
+function filterNonDestructive(diff: SnapshotDiff): SnapshotDiff {
+	const isTopLevelDelete = (diffs: ReadonlyArray<{ kind: string; path?: unknown }>) =>
+		diffs.some(d => d.kind === 'D' && !d.path);
+
+	const deletedCollections = new Set(
+		diff.collections.filter(c => isTopLevelDelete(c.diff)).map(c => c.collection)
+	);
+
+	return {
+		...diff,
+		collections: diff.collections.filter(c => !deletedCollections.has(c.collection)),
+		fields: diff.fields.filter(
+			f => !deletedCollections.has(f.collection) && !isTopLevelDelete(f.diff)
+		),
+		systemFields: (diff.systemFields ?? []).filter(
+			f => !deletedCollections.has(f.collection) && !isTopLevelDelete(f.diff)
+		),
+		relations: diff.relations.filter(
+			r => !deletedCollections.has(r.collection) && !isTopLevelDelete(r.diff)
+		),
+	};
+}
 
 export class SchemaExporter implements IExporter {
 	protected _filePath: string;
@@ -15,7 +43,7 @@ export class SchemaExporter implements IExporter {
 	constructor(
 		protected getSchemaService: () => Promise<InstanceType<ExtensionsServices['SchemaService']>>,
 		protected logger: ApiExtensionContext['logger'],
-		protected options = { split: true }
+		protected options = { split: true, safe: false }
 	) {
 		this._filePath = `${ExportHelper.dataDir}/schema.json`;
 	}
@@ -112,8 +140,12 @@ export class SchemaExporter implements IExporter {
 			}
 
 			this.logger.info(`Diffing schema with hash: ${currentHash} and hash: ${hash}`);
-			const diff = await svc.diff(snapshot, { currentSnapshot, force: true });
+			let diff = await svc.diff(snapshot, { currentSnapshot, force: true });
 			if (diff !== null) {
+				if (this.options.safe) {
+					diff = filterNonDestructive(diff);
+					this.logger.info('SCHEMA_SYNC_SAFE: filtered destructive operations from diff');
+				}
 				this.logger.info(`Applying schema diff...`);
 				await svc.apply({ diff, hash: currentHash });
 				this.logger.info(`Schema updated`);
