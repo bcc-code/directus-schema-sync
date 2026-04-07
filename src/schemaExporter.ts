@@ -1,5 +1,5 @@
 import type { ApiExtensionContext } from '@directus/extensions';
-import type { Collection, ExtensionsServices, Snapshot, SnapshotField, SnapshotRelation } from '@directus/types';
+import type { Collection, ExtensionsServices, Snapshot, SnapshotDiff, SnapshotField, SnapshotRelation } from '@directus/types';
 import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import { condenseAction } from './condenseAction.js';
