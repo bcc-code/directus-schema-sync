@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          token: ${{ secrets.GH_ACCESS_TOKEN_BCC_BOT }}
+          token: ${{ secrets.BCC_BOT_ACCESS_TOKEN }}
 
       - name: Set commit author to bcc-bot
         run: |
