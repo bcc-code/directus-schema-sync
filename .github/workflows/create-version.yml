@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: ${{ secrets.BCC_BOT_ACCESS_TOKEN }}
+          token: ${{ secrets.BCC_BOT_ACCESS_TOKEN || github.token }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
