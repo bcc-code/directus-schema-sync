@@ -24,21 +24,18 @@ env:
   CI: true
 
 permissions:
-  contents: write
+  id-token: write # This is required for requesting the JWT
+  contents: write # This is required for actions/checkout
 
 jobs:
   version:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
-          token: ${{ secrets.BCC_BOT_ACCESS_TOKEN }}
-
-      - name: Set commit author to bcc-bot
-        run: |
-          git config --global user.name "bcc-bot"
-          git config --global user.email "84040471+bcc-bot@users.noreply.github.com"
+          token: ${{ secrets.GH_ACCESS_TOKEN_BCC_BOT }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
