@@ -17,6 +17,7 @@ const DEFAULT_COLLECTION_EXPORTER_OPTIONS: CollectionExporterOptions = {
 };
 
 class CollectionExporter implements IExporter {
+	protected _itemsService?: IItemsService;
 	protected _getService: () => Promise<IItemsService>;
 	protected collection: string;
 
@@ -39,8 +40,7 @@ class CollectionExporter implements IExporter {
 			...otherOpts,
 		};
 
-		let srv: IItemsService;
-		this._getService = async () => srv || (srv = await getItemsService(collectionName));
+		this._getService = async () => this._itemsService || (this._itemsService = await getItemsService(collectionName));
 
 		this.collection = collectionName;
 
@@ -76,6 +76,12 @@ class CollectionExporter implements IExporter {
 
 	get name() {
 		return this.collection;
+	}
+
+	/** Clear cached schema-dependent state after the DB schema has changed. */
+	public clearCache() {
+		this._itemsService = undefined;
+		this._settings = null;
 	}
 
 	protected _persistQueue = condenseAction(() => this.exportCollectionToFile());

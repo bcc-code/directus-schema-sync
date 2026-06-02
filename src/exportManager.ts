@@ -1,12 +1,15 @@
 import type { ApiExtensionContext } from '@directus/extensions';
 import type { ActionHandler } from '@directus/types';
 import { CollectionExporter } from './collectionExporter.js';
-import { ExportCollectionConfig, IExporterConfig, IGetItemsService } from './types';
+import type { ExportCollectionConfig, IExporterConfig, IGetItemsService } from './types';
 
 export class ExportManager {
 	protected exporters: IExporterConfig[] = [];
 
-	constructor(protected logger: ApiExtensionContext['logger']) {}
+	constructor(
+		protected logger: ApiExtensionContext['logger'],
+		protected clearSchemaCache?: () => void
+	) {}
 
 	// FIRST: Add exporters
 	public addExporter(exporterConfig: IExporterConfig) {
@@ -28,11 +31,21 @@ export class ExportManager {
 		await this._loadNextExporter(0, merge);
 	}
 
+	protected refreshSchemaCache() {
+		this.clearSchemaCache?.();
+		for (const { exporter } of this.exporters) {
+			exporter.clearCache?.();
+		}
+	}
+
 	protected async _loadNextExporter(i = 0, merge = false) {
 		if (i >= this.exporters.length) return;
 
 		try {
 			const finishUp = await this.exporters[i]!.exporter.load(merge);
+			if (this.exporters[i]!.exporter.name === 'schema') {
+				this.refreshSchemaCache();
+			}
 			await this._loadNextExporter(i + 1, merge);
 			if (typeof finishUp === 'function') await finishUp();
 		} catch (e) {

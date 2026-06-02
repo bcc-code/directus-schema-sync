@@ -10,6 +10,7 @@ export interface IExporter {
 	name: string;
 	load: (merge?: boolean) => Promise<(() => Promise<void>) | null | void>;
 	export: () => Promise<void>;
+	clearCache?: () => void;
 }
 
 export interface IExporterConfig {

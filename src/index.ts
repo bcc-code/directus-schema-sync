@@ -41,7 +41,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	let _exportManager: ExportManager;
 
 	const createExportManager = async (dataOnly = false) => {
-		const exportMng = new ExportManager(logger);
+		const exportMng = new ExportManager(logger, clearAdminSchema);
 
 		if (!dataOnly) {
 			exportMng.addExporter({

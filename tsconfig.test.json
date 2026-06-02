@@ -26,5 +26,13 @@
 		"rootDir": "./src",
 		"outDir": "./dist-test",
 	},
-	"include": ["src/utils.ts", "src/utils.test.ts", "src/dialects/postgres/utils.ts", "src/dialects/postgres/utils.test.ts"]
+	"include": [
+		"src/utils.ts",
+		"src/utils.test.ts",
+		"src/dialects/postgres/utils.ts",
+		"src/dialects/postgres/utils.test.ts",
+		"src/exportManager.ts",
+		"src/exportManager.test.ts",
+		"src/types.ts"
+	]
 }
