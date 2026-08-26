@@ -27,6 +27,7 @@
 		"outDir": "./dist-test",
 	},
 	"include": [
+		"src/directus-api-license.d.ts",
 		"src/utils.ts",
 		"src/utils.test.ts",
 		"src/dialects/postgres/utils.ts",

@@ -7,7 +7,7 @@ import { ExportManager } from './exportManager';
 import { SchemaExporter } from './schemaExporter';
 import type { ExportCollectionConfig, IGetItemsService, IItemsService } from './types';
 import { UpdateManager } from './updateManager';
-import { ADMIN_ACCOUNTABILITY, ExportHelper, nodeImport } from './utils';
+import { ADMIN_ACCOUNTABILITY, ExportHelper, ensureLicenseInitialized, nodeImport } from './utils';
 
 const registerHook: HookConfig = async ({ action, init }, { env, services, database, getSchema, logger }) => {
 	const { SchemaService, ItemsService } = services;
@@ -167,6 +167,8 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 				const meta = await ExportHelper.getExportMeta();
 				if (!meta) return logger.info('Nothing exported yet it seems');
 
+				// CLI does not start the full app, so load entitlements before schema apply
+				await ensureLicenseInitialized();
 				const exportSchema = new SchemaExporter(getSchemaService, logger, schemaOptions);
 				await exportSchema.load();
 
@@ -207,6 +209,8 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 			.action(async ({ merge, data }: { merge: boolean; data: boolean }) => {
 				try {
 					logger.info(`Importing everything from: ${ExportHelper.dataDir}`);
+					// CLI does not start the full app, so load entitlements before mutations
+					await ensureLicenseInitialized();
 					const expMng = await exportManager(data);
 					await expMng.loadAll(merge);
 

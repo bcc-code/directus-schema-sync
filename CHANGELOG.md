@@ -1,3 +1,8 @@
+# Version 4.0.0
+
+  - **Breaking** Requires Directus 12 (`host: ^12.0.0`). Use version 3.* for Directus 11.
+  - **Fixed** Initialize license entitlements before schema/data import (same approach as [directus#27869](https://github.com/directus/directus/pull/27869)), so CLI and startup sync respect `LICENSE_KEY` / `LICENSE_TOKEN` limits instead of Core defaults.
+
 # Version 3.3.1
 
   - **Updated & Fixed** For Directus 11.17

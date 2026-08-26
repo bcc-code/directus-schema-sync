@@ -28,7 +28,8 @@ Depending on how you already are using Directus you can either install this plug
 
 NOTE: Installing via marketplace is not recommended as you would still need to execute the install command as well as configure the config files.
 
- - ** DIRECTUS 11 ** Use latest version
+ - ** DIRECTUS 12 ** Use version 4.*
+ - ** DIRECTUS 11 ** Use version 3.*
  - ** DIRECTUS < 10 ** Use version 2.*
 
 ---

@@ -2,7 +2,7 @@
 	"name": "directus-extension-schema-sync",
 	"description": "Sync schema and data between Directus instances",
 	"icon": "sync_alt",
-	"version": "3.3.2",
+	"version": "4.0.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/bcc-code/directus-schema-sync.git"
@@ -19,7 +19,7 @@
 		"type": "hook",
 		"path": "dist/index.js",
 		"source": "src/index.ts",
-		"host": "^11.0.0"
+		"host": "^12.0.0"
 	},
 	"files": [
 		"dist",
@@ -37,6 +37,7 @@
 	},
 	"devDependencies": {
 		"@directus/extensions": "^3.0.23",
+		"@directus/extensions-sdk": "^18.0.4",
 		"@directus/types": "^15.0.1",
 		"@types/keyv": "^4.2.0",
 		"@types/node": "^25.0.10",
@@ -47,6 +48,6 @@
 		"glob": "^10.4.5"
 	},
 	"peerDependencies": {
-		"@directus/api": "^35.0.0 || ^34.0.0 || ^33.0.0"
+		"@directus/api": ">=36.0.0"
 	}
 }

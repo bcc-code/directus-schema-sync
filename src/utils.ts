@@ -17,6 +17,36 @@ export function nodeImport(dir: string, file: string) {
 	return import(pathToFileURL(resolve(dir, file)).href);
 }
 
+/**
+ * Ensure Directus license entitlements are loaded before schema/data
+ * mutations that enforce tier limits (mirrors directus/directus#27869).
+ * Required for CLI paths that do not start the full app.
+ * Lazy-imported so unit tests can load this module without a Directus env.
+ */
+let licenseInitializePromise: Promise<void> | null = null;
+
+export async function ensureLicenseInitialized(): Promise<void> {
+	if (licenseInitializePromise) return licenseInitializePromise;
+
+	licenseInitializePromise = (async () => {
+		try {
+			const { getLicenseManager } = await import('@directus/api/license/index');
+			const manager = getLicenseManager() as ReturnType<typeof getLicenseManager> & {
+				initialized?: boolean;
+			};
+			// App startup already initializes the license before `app.before`;
+			// only initialize when running via CLI (or if it has not run yet).
+			if (manager.initialized) return;
+			await manager.initialize();
+		} catch (error) {
+			licenseInitializePromise = null;
+			throw error;
+		}
+	})();
+
+	return licenseInitializePromise;
+}
+
 export class ExportHelper {
 	static get schemaDir() {
 		return resolve(process.cwd(), 'schema-sync');

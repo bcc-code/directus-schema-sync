@@ -5,7 +5,7 @@ import { glob } from 'glob';
 import { condenseAction } from './condenseAction.js';
 import { exportHook } from './schemaExporterHooks.js';
 import type { IExporter } from './types';
-import { ExportHelper } from './utils.js';
+import { ensureLicenseInitialized, ExportHelper } from './utils.js';
 
 /**
  * Removes all destructive (DELETE) operations from a schema diff.
@@ -146,6 +146,8 @@ export class SchemaExporter implements IExporter {
 					diff = filterNonDestructive(diff);
 					this.logger.info('SCHEMA_SYNC_SAFE: filtered destructive operations from diff');
 				}
+				// Load license so schema changes are checked against active limits (Directus 12+)
+				await ensureLicenseInitialized();
 				this.logger.info(`Applying schema diff...`);
 				await svc.apply({ diff, hash: currentHash });
 				this.logger.info(`Schema updated`);
