@@ -44,6 +44,10 @@ export type CollectionExporterOptions = {
 
 	// Prefix to add to the exported file name
 	prefix?: string;
+
+	// Whether Directus should emit events for mutations during import (default true)
+	emitEvents?: boolean;
+
 	onExport?: (item: Item, srv: IItemsService) => Promise<Item | null>;
 	onImport?: (item: Item, srv: IItemsService) => Promise<Item | null>;
 };

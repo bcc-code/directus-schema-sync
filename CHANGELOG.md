@@ -1,9 +1,13 @@
+# Version 4.0.1
+
+  - **Added** Per-collection `emitEvents` option (default `true`) to control whether Directus emits events on import mutations.
+
 # Version 4.0.0
 
   - **Breaking** Requires Directus 12 (`host: ^12.0.0`). Use version 3.* for Directus 11.
   - **Fixed** Initialize license entitlements before schema/data import (same approach as [directus#27869](https://github.com/directus/directus/pull/27869)), so CLI and startup sync respect `LICENSE_KEY` / `LICENSE_TOKEN` limits instead of Core defaults.
 
-# Version 3.3.1
+## Version 3.3.1
 
   - **Updated & Fixed** For Directus 11.17
   - **Added** `SCHEMA_SYNC_SAFE` - (optional) Safe mode for schema import. Filters destructive diff operations (deletes), so project-specific collections/fields/relations are not removed.

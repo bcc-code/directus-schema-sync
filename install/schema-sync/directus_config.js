@@ -8,6 +8,7 @@
  * These are just some sensible settings, but you might not want to export everything
  * 
  * Add custom collections to the syncCustomCollections object in the config.js file.
+ * Per-collection options (including emitEvents) match those documented in config.js.
  */
 export const syncDirectusCollections = {
 	directus_folders: {

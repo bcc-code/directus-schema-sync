@@ -96,6 +96,8 @@ You can create **additional config files** with the other config files, and set 
 
 View the comments in the `config.js` file for more information.
 
+Set `emitEvents: false` on a collection to skip Directus events (flows/hooks) during import mutations. Default is `true`.
+
 ### Exporting users with passwords
 This does not work out of the box due to Directus masking the exported password. In order to export the hashed value you can add the following to the `schema-sync/directus_config.js` file within the `directus_users` object.
 
