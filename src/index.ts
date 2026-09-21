@@ -6,7 +6,7 @@ import { copyConfig } from './copyConfig';
 import { ExportManager } from './exportManager';
 import { SchemaExporter } from './schemaExporter';
 import type { ExportCollectionConfig, IGetItemsService, IItemsService } from './types';
-import { UpdateManager } from './updateManager';
+import { UpdateManager, describeLockResult } from './updateManager';
 import { ADMIN_ACCOUNTABILITY, ExportHelper, ensureLicenseInitialized, nodeImport } from './utils';
 
 const registerHook: HookConfig = async ({ action, init }, { env, services, database, getSchema, logger }) => {
@@ -88,8 +88,11 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 
 	const updateMeta = condenseAction(async (saveToDb = true) => {
 		const meta = await ExportHelper.updateExportMeta();
-		if (saveToDb && meta && (await updateManager.lockForUpdates(meta.hash, meta.ts))) {
-			await updateManager.commitUpdates();
+		if (saveToDb && meta) {
+			const lock = await updateManager.lockForUpdates(meta.hash, meta.ts);
+			if (lock.success) {
+				await updateManager.commitUpdates();
+			}
 		}
 	});
 
@@ -110,9 +113,17 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 	if (env.SCHEMA_SYNC === 'BOTH' || env.SCHEMA_SYNC === 'IMPORT') {
 		init('app.before', async () => {
 			try {
+				logger.info(`Schema sync (${env.SCHEMA_SYNC}): checking for pending import`);
 				const meta = await ExportHelper.getExportMeta();
 				if (!meta) return logger.info('Nothing exported yet it seems');
-				if (!(await updateManager.lockForUpdates(meta.hash, meta.ts))) return; // Schema is locked / no change, nothing to do
+
+				logger.info(`Schema sync: export meta hash=${meta.hash} ts=${meta.ts}`);
+				const lock = await updateManager.lockForUpdates(meta.hash, meta.ts);
+				if (!lock.success) {
+					const level = lock.reason === 'row_locked' ? 'warn' : 'info';
+					logger[level](`Schema sync skipped: ${describeLockResult(lock)}`);
+					return;
+				}
 
 				logger.info(`Updating schema and data with hash: ${meta.hash}`);
 				const expMng = await exportManager();

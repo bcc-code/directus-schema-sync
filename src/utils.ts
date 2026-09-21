@@ -64,16 +64,31 @@ export class ExportHelper {
 		return isoTimestamp.replace('T', ' ').replace(/\.\d*Z/, '');
 	}
 
-	static async updateExportMeta() {
+	/**
+	 * Collect every `.json` file under dataDir (including nested schema/ and grouped dirs),
+	 * with stable sorted relative paths.
+	 */
+	static async listDataJsonFiles(dataDir: string = ExportHelper.dataDir): Promise<string[]> {
+		const entries = await readdir(dataDir, { recursive: true });
+		return entries
+			.map(file => file.toString().replace(/\\/g, '/'))
+			.filter(file => file.endsWith('.json'))
+			.sort();
+	}
+
+	static async computeDataHash(dataDir: string = ExportHelper.dataDir): Promise<string> {
 		const hasher = createHash('sha256');
-		const files = await readdir(ExportHelper.dataDir);
+		const files = await ExportHelper.listDataJsonFiles(dataDir);
 		for (const file of files) {
-			if (file.endsWith('.json')) {
-				const json = await readFile(`${ExportHelper.dataDir}/${file}`, { encoding: 'utf8' });
-				hasher.update(json);
-			}
+			hasher.update(file);
+			const json = await readFile(resolve(dataDir, file), { encoding: 'utf8' });
+			hasher.update(json);
 		}
-		const hash = hasher.digest('hex');
+		return hasher.digest('hex');
+	}
+
+	static async updateExportMeta() {
+		const hash = await ExportHelper.computeDataHash();
 
 		const { hash: previousHash } = await ExportHelper.getExportMeta() || {};
 

@@ -24,7 +24,7 @@
 		"allowSyntheticDefaultImports": true,
 		"isolatedModules": true,
 		"rootDir": "./src",
-		"outDir": "./dist-test",
+		"outDir": "./dist-test"
 	},
 	"include": [
 		"src/directus-api-license.d.ts",
@@ -34,6 +34,8 @@
 		"src/dialects/postgres/utils.test.ts",
 		"src/exportManager.ts",
 		"src/exportManager.test.ts",
+		"src/updateManager.ts",
+		"src/updateManager.test.ts",
 		"src/types.ts"
 	]
 }

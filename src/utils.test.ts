@@ -1,6 +1,9 @@
 import assert from 'node:assert';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { deepEqual, getDiff, sortObject } from './utils.js';
+import { deepEqual, ExportHelper, getDiff, sortObject } from './utils.js';
 
 describe('sortObject', () => {
 	it('should sort object keys alphabetically', () => {
@@ -52,7 +55,7 @@ describe('getDiff', () => {
 	it('should handle nested objects', () => {
 		const newObj = { a: 1, b: { c: 2, d: 3 } };
 		const oldObj = { a: 1, b: { c: 2, d: 4 } };
-		const assertedOutput = { b: { d: 3 } };
+		const assertedOutput = { b: { c: 2, d: 3 } };
 		assert.deepStrictEqual(getDiff(newObj, oldObj), assertedOutput);
 	});
 
@@ -100,5 +103,63 @@ describe('deepEqual', () => {
 		assert.strictEqual(deepEqual(1, 2), false);
 		assert.strictEqual(deepEqual('hello', 'world'), false);
 		assert.strictEqual(deepEqual(null, undefined), false);
+	});
+});
+
+describe('ExportHelper data hashing', () => {
+	async function withTempDataDir(run: (dataDir: string) => Promise<void>) {
+		const root = await mkdtemp(join(tmpdir(), 'schema-sync-hash-'));
+		const dataDir = join(root, 'data');
+		await mkdir(dataDir, { recursive: true });
+		try {
+			await run(dataDir);
+		} finally {
+			await rm(root, { recursive: true, force: true });
+		}
+	}
+
+	it('lists nested schema and grouped collection JSON files', async () => {
+		await withTempDataDir(async dataDir => {
+			await writeFile(join(dataDir, 'schema.json'), '{"partial":true}');
+			await mkdir(join(dataDir, 'schema'), { recursive: true });
+			await writeFile(join(dataDir, 'schema', 'articles.json'), '{"collection":"articles"}');
+			await mkdir(join(dataDir, 'directus_permissions'), { recursive: true });
+			await writeFile(join(dataDir, 'directus_permissions', 'admin.json'), '[]');
+
+			const files = await ExportHelper.listDataJsonFiles(dataDir);
+			assert.deepStrictEqual(files, [
+				'directus_permissions/admin.json',
+				'schema.json',
+				'schema/articles.json',
+			]);
+		});
+	});
+
+	it('changes hash when a nested schema file changes', async () => {
+		await withTempDataDir(async dataDir => {
+			await writeFile(join(dataDir, 'schema.json'), '{"partial":true,"hash":"abc"}');
+			await mkdir(join(dataDir, 'schema'), { recursive: true });
+			await writeFile(join(dataDir, 'schema', 'articles.json'), '{"collection":"articles"}');
+
+			const before = await ExportHelper.computeDataHash(dataDir);
+			await writeFile(join(dataDir, 'schema', 'articles.json'), '{"collection":"articles","fields":[]}');
+			const after = await ExportHelper.computeDataHash(dataDir);
+
+			assert.notStrictEqual(before, after);
+		});
+	});
+
+	it('changes hash when a grouped collection file changes', async () => {
+		await withTempDataDir(async dataDir => {
+			await writeFile(join(dataDir, 'directus_permissions.json'), '{"partial":true,"count":1}');
+			await mkdir(join(dataDir, 'directus_permissions'), { recursive: true });
+			await writeFile(join(dataDir, 'directus_permissions', 'admin.json'), '[{"id":1}]');
+
+			const before = await ExportHelper.computeDataHash(dataDir);
+			await writeFile(join(dataDir, 'directus_permissions', 'admin.json'), '[{"id":1},{"id":2}]');
+			const after = await ExportHelper.computeDataHash(dataDir);
+
+			assert.notStrictEqual(before, after);
+		});
 	});
 });
