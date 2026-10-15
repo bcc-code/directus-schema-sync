@@ -62,6 +62,7 @@ export type ToUpdateItemDiff = {
 //
 export type MutationOptions = {
 	emitEvents?: boolean;
+	autoPurgeCache?: boolean;
 };
 export interface IItemsService extends AbstractService<Item> {
 	collection: string;

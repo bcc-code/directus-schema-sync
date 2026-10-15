@@ -36,6 +36,12 @@
 		"src/exportManager.test.ts",
 		"src/updateManager.ts",
 		"src/updateManager.test.ts",
+		"src/importRunner.ts",
+		"src/importRunner.test.ts",
+		"src/schemaHash.ts",
+		"src/schemaHash.test.ts",
+		"src/schemaExporter.ts",
+		"src/schemaExporter.test.ts",
 		"src/types.ts"
 	]
 }

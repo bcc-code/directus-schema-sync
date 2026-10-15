@@ -16,7 +16,8 @@ export type LockResult =
 export type SettingsSyncRow = {
 	mv_locked: boolean;
 	mv_hash: string;
-	mv_ts: string | Date | null;
+	// SQLite returns epoch millis for values written as Date
+	mv_ts: string | Date | number | null;
 };
 
 /**
@@ -59,19 +60,30 @@ export function evaluateLockEligibility(
 	return { success: true, reason: 'acquired' };
 }
 
-function formatTs(value: string | Date): string {
+function formatTs(value: string | Date | number): string {
 	if (value instanceof Date) return value.toISOString();
+	if (typeof value === 'number') return new Date(value).toISOString();
 	return String(value);
 }
 
-/** Parse hash.txt-style timestamps (`YYYY-MM-DD HH:mm:ss`) and Date values as UTC. */
-function toUtcMillis(value: string | Date): number {
+/** Parse hash.txt-style timestamps (`YYYY-MM-DD HH:mm:ss`), Date values and epoch millis as UTC. */
+function toUtcMillis(value: string | Date | number): number {
 	if (value instanceof Date) return value.getTime();
+	if (typeof value === 'number') return value;
 	const raw = String(value).trim();
 	if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(raw)) {
 		return new Date(raw.replace(' ', 'T') + 'Z').getTime();
 	}
 	return new Date(raw).getTime();
+}
+
+/**
+ * Convert a hash.txt timestamp to an absolute instant for `mv_ts`.
+ * Writing the raw string lets the DB interpret it in its session time zone,
+ * which shifts the stored value whenever that zone is not UTC.
+ */
+export function toDbTimestamp(isoTS: string): Date {
+	return new Date(toUtcMillis(isoTS));
 }
 
 export function describeLockResult(result: LockResult): string {
@@ -101,6 +113,7 @@ export class UpdateManager {
 	protected rowId = 1;
 
 	protected _locking = false;
+	protected _installed = false;
 	protected _locked:
 		| {
 				hash: string;
@@ -124,11 +137,24 @@ export class UpdateManager {
 
 		try {
 			// Don't lock if schema sync is not installed yet
-			const isInstalled = await this.db.schema.hasColumn(this.tableName, 'mv_hash');
-			if (!isInstalled) {
-				return { success: true, reason: 'not_installed' };
+			if (!this._installed) {
+				this._installed = await this.db.schema.hasColumn(this.tableName, 'mv_hash');
+				if (!this._installed) {
+					return { success: true, reason: 'not_installed' };
+				}
 			}
 
+			// Cheap read first: on most starts nothing changed, so skip the row-locking transaction
+			const current = await this.db(this.tableName)
+				.select('mv_locked', 'mv_hash', 'mv_ts')
+				.where('id', this.rowId)
+				.first();
+			const precheck = evaluateLockEligibility(current as SettingsSyncRow | undefined, newHash, isoTS);
+			if (!precheck.success) {
+				return precheck;
+			}
+
+			// Re-check under a row lock, another instance may have taken it since the read above
 			return await this.db.transaction(async trx => {
 				const rows = await trx(this.tableName)
 					.select('mv_locked', 'mv_hash', 'mv_ts')
@@ -159,7 +185,7 @@ export class UpdateManager {
 
 		await this.db(this.tableName).where('id', this.rowId).update({
 			mv_hash: this._locked.hash,
-			mv_ts: this._locked.ts,
+			mv_ts: toDbTimestamp(this._locked.ts),
 			mv_locked: false,
 		});
 
@@ -170,7 +196,7 @@ export class UpdateManager {
 	public async forceCommitUpdates(newHash: string, isoTS: string) {
 		await this.db(this.tableName).where('id', this.rowId).update({
 			mv_hash: newHash,
-			mv_ts: isoTS,
+			mv_ts: toDbTimestamp(isoTS),
 			mv_locked: false,
 		});
 
@@ -200,6 +226,7 @@ export class UpdateManager {
 				table.timestamp('mv_ts', { useTz: true }).defaultTo('2020-01-01').notNullable();
 				table.boolean('mv_locked').defaultTo(false).notNullable();
 			});
+			this._installed = true;
 			return true;
 		}
 		return false;

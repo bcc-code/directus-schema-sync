@@ -313,7 +313,11 @@ class CollectionExporter implements IExporter {
 
 		const itemsSvc = await this._getService();
 		const { getKey, getPrimary, queryWithPrimary } = await this.settings();
-		const mutationOpts = { emitEvents: this.options.emitEvents !== false };
+		const mutationOpts = {
+			emitEvents: this.options.emitEvents !== false,
+			// Caches are flushed once after the whole import instead of after every item
+			autoPurgeCache: false,
+		};
 
 		const items = await itemsSvc.readByQuery(queryWithPrimary);
 
