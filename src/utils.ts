@@ -117,16 +117,22 @@ export class ExportHelper {
 	static async getExportMeta() {
 		try {
 			const content = await readFile(this.hashFile, { encoding: 'utf8' });
-			const [hash, ts] = content.split('@');
-
-			if (hash && ts && new Date(ts).toString() !== 'Invalid Date') {
-				return {
-					hash,
-					ts,
-				};
-			}
+			return ExportHelper.parseExportMeta(content);
 		} catch {
 			// ignore
+		}
+		return null;
+	}
+
+	/** Parse `hash@ts` content of hash.txt, ignoring surrounding whitespace (eg. a trailing newline added by an editor or git). */
+	static parseExportMeta(content: string) {
+		const [hash, ts] = content.trim().split('@').map(part => part.trim());
+
+		if (hash && ts && new Date(ts).toString() !== 'Invalid Date') {
+			return {
+				hash,
+				ts,
+			};
 		}
 		return null;
 	}

@@ -18,7 +18,7 @@ Sync **chosen** data such as
 
 Upon installing configure what data you wish to export from the DB and be able to commit to your repository. Then on the other environments you can import the schema and data automatically.
 
-**Auto Import** the schema and data when Directus starts up. This is useful for production environments. Using a **locking mechanism**, only one instance of Directus will import the schema and data.
+**Auto Import** the schema and data when Directus starts up. This is useful for production environments. Using a **locking mechanism**, only one instance of Directus will import the schema and data. Use **Lazy Import** to do this in the background instead of delaying start-up.
 
 **IMPORTANT** Always be careful with what you export and commit to your repository.
 
@@ -83,14 +83,30 @@ docker compose exec -it my-directus npx directus schema-sync install --force
 
 View and edit the schema-sync/*_config.js_ file to include the collections you want to sync.
 
-To automatically import and export the schema and data, set the `SCHEMA_SYNC` environment variable to `IMPORT`, `EXPORT` or `BOTH`.
-In production it is advised to set `SCHEMA_SYNC` to `IMPORT` and in local development to `BOTH`.
+To automatically import and export the schema and data, set the `SCHEMA_SYNC` environment variable to `IMPORT`, `LAZY_IMPORT`, `EXPORT` or `BOTH`.
+In production it is advised to set `SCHEMA_SYNC` to `IMPORT` (or `LAZY_IMPORT`, see below) and in local development to `BOTH`.
 
 Note: This extension will not work if there is no row in the `directus_settings` database table. To avoid this happening, make sure `PROJECT_NAME` configuration variable is set when Directus is first time installed into the database. Alternatively, if Directus is already installed, just manually create a row in `directus_settings`, if one is not already there, with whatever project name you want and keep everything else to defaults.
+
+### Lazy import
+
+`SCHEMA_SYNC=IMPORT` imports before Directus starts accepting requests, so start-up waits for it (longer the more there is to import, close to nothing when nothing changed). With `SCHEMA_SYNC=LAZY_IMPORT` Directus starts straight away and the import runs in the background once the server is listening, much like an admin applying the same changes through the Directus admin app.
+
+> [!WARNING]
+> With `LAZY_IMPORT` the schema and data **may be outdated when the server receives its first requests**. Until the import has finished, requests are served from the previous schema, permissions, flows and settings, and while it runs they can see it half applied (e.g. a new collection whose permissions are not imported yet). Only use it when your clients can handle that, for example when new fields are optional, or when a short window of `403`s or missing fields after a deploy is acceptable. Use `IMPORT` when the first request must see the new schema.
+
+How it behaves with multiple instances/containers:
+
+ - As with `IMPORT`, only the instance that acquires the lock imports, the others skip it (`Schema sync skipped: locked by another process`).
+ - Once the import finishes, Directus' caches are flushed and every instance is told the schema changed and to reload its flows. Other instances only hear about this when Redis is configured (`REDIS` or `REDIS_*`, plus `CACHE_STORE=redis` when caching is enabled), which Directus already requires when running more than one instance.
+ - If the import fails, the lock is released and the next start tries again.
+ - Look for `Schema sync: import finished in …ms` in the logs to see when the instance is up to date.
 
 ### Tips
 
 **Order matters** when importing and exporting. For example if you have a collection (A) with a relation to another collection (B), then ensure in the config that collection (B) comes first. This is so when we import, we first import B, then A. Deletions happen afterward in the reverse order.
+
+**Editing the exported files by hand**, e.g. the schema files or resolving a merge conflict in them, is fine. Run `npx directus schema-sync hash` afterwards so `hash.txt` (and the schema hash in `schema.json`) change, otherwise other environments will not import your edits.
 
 You can create **additional config files** with the other config files, and set the name on the `SCHEMA_SYNC_CONFIG` env variable. For example to include a test data set used during testing in CI/CD. Additional config files need to export `syncCustomCollections` object like in the `config.js` file.
 
@@ -127,7 +143,7 @@ onImport: async (item, itemsSrv) => {
 
 | Variable | Description | Default |
 | -------- | ----------- | ------- |
-| `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **EXPORT** or **BOTH** | `null` |
+| `SCHEMA_SYNC` | Set to automatically do **IMPORT**, **LAZY_IMPORT**, **EXPORT** or **BOTH**. `LAZY_IMPORT` imports in the background after start-up, so the schema may be outdated for the first requests, see [Lazy import](#lazy-import) | `null` |
 | `SCHEMA_SYNC_CONFIG` | (optional) An additional config file to use in addition, eg. `test_config.js` | `null` |
 | `SCHEMA_SYNC_SPLIT` | (optional) Splits the schema file into multiple files once per collection | `true` |
 | `SCHEMA_SYNC_SAFE` | (optional) Safe mode for schema import. Filters destructive diff operations (deletes), so project-specific collections/fields/relations are not removed. | `false` |
@@ -145,7 +161,7 @@ Besides auto importing and exporting, you can also run the commands manually.
 | ------- | ----------- |
 | `export` | Export the schema and data from the Directus API |
 | `import` | Import the schema and data to the Directus API (options: `merge`, `data`) |
-| `hash`| Recalculate the hash for all the data files (already happens after export) |
+| `hash`| Recalculate the schema hash in `schema.json` and the hash for all the data files. Run it after editing the exported files by hand (already happens after export) |
 | `install` | Install the extension's columns in the database and add the config folder (options: `force`) |
 | `export-schema` | Export only the schema (options: --split <boolean>) |
 | `import-schema` | Import only the schema |

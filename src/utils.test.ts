@@ -106,6 +106,27 @@ describe('deepEqual', () => {
 	});
 });
 
+describe('ExportHelper.parseExportMeta', () => {
+	it('parses hash and timestamp', () => {
+		assert.deepStrictEqual(ExportHelper.parseExportMeta('abc@2024-06-01 12:00:00'), {
+			hash: 'abc',
+			ts: '2024-06-01 12:00:00',
+		});
+	});
+
+	it('ignores a trailing newline or CRLF', () => {
+		const expected = { hash: 'abc', ts: '2024-06-01 12:00:00' };
+		assert.deepStrictEqual(ExportHelper.parseExportMeta('abc@2024-06-01 12:00:00\n'), expected);
+		assert.deepStrictEqual(ExportHelper.parseExportMeta('abc@2024-06-01 12:00:00\r\n'), expected);
+	});
+
+	it('rejects missing or invalid parts', () => {
+		assert.strictEqual(ExportHelper.parseExportMeta(''), null);
+		assert.strictEqual(ExportHelper.parseExportMeta('abc'), null);
+		assert.strictEqual(ExportHelper.parseExportMeta('abc@not a date'), null);
+	});
+});
+
 describe('ExportHelper data hashing', () => {
 	async function withTempDataDir(run: (dataDir: string) => Promise<void>) {
 		const root = await mkdtemp(join(tmpdir(), 'schema-sync-hash-'));
