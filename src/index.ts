@@ -241,9 +241,12 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 					// CLI does not start the full app, so load entitlements before mutations
 					await ensureLicenseInitialized();
 					const expMng = await exportManager(data);
-					await expMng.loadAll(merge);
-					// Running instances sharing the cache/bus should drop what they cached
-					await flushCaches();
+					try {
+						await expMng.loadAll(merge);
+					} finally {
+						// Partial imports may already have committed changes.
+						await flushCaches();
+					}
 
 					logger.info('Done!');
 					process.exit(0);
