@@ -108,6 +108,14 @@ describe('SchemaExporter hashing', () => {
 		assert.ok(!logs.some(([level]) => level === 'warn'));
 	});
 
+	it('force diffs the schema even when it is up-to-date', async () => {
+		const { getSchemaService, calls } = fakeSchemaService(() => dbSnapshot());
+		const exporter = new SchemaExporter(getSchemaService, logger, { split: true, safe: false });
+		await exporter.export();
+		await exporter.load(false, true);
+		assert.strictEqual(calls.diff, 1);
+	});
+
 	it('updates the stored hash after a schema file was edited by hand', async () => {
 		const { getSchemaService } = fakeSchemaService(() => dbSnapshot());
 		const exporter = new SchemaExporter(getSchemaService, logger, { split: true, safe: false });

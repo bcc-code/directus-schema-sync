@@ -179,7 +179,8 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 		dbCommand
 			.command('import-schema')
 			.description('Import only the schema file')
-			.action(async () => {
+			.option('-f, --force', 'Diff and apply the schema even when it seems up-to-date')
+			.action(async ({ force }: { force?: boolean }) => {
 				logger.info('Importing schema...');
 				const meta = await ExportHelper.getExportMeta();
 				if (!meta) return logger.info('Nothing exported yet it seems');
@@ -187,7 +188,7 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 				// CLI does not start the full app, so load entitlements before schema apply
 				await ensureLicenseInitialized();
 				const exportSchema = new SchemaExporter(getSchemaService, logger, schemaOptions);
-				await exportSchema.load();
+				await exportSchema.load(false, force);
 
 				await updateManager.forceCommitUpdates(meta.hash, meta.ts);
 				logger.info('Done!');
@@ -235,14 +236,15 @@ const registerHook: HookConfig = async ({ action, init }, { env, services, datab
 			.description('Import the schema and all available data from file to DB.')
 			.option('--merge', 'Only upsert data and not delete')
 			.option('--data', 'Only import data and not schema')
-			.action(async ({ merge, data }: { merge: boolean; data: boolean }) => {
+			.option('-f, --force', 'Diff and apply the schema even when it seems up-to-date')
+			.action(async ({ merge, data, force }: { merge: boolean; data: boolean; force?: boolean }) => {
 				try {
 					logger.info(`Importing everything from: ${ExportHelper.dataDir}`);
 					// CLI does not start the full app, so load entitlements before mutations
 					await ensureLicenseInitialized();
 					const expMng = await exportManager(data);
 					try {
-						await expMng.loadAll(merge);
+						await expMng.loadAll(merge, force);
 					} finally {
 						// Partial imports may already have committed changes.
 						await flushCaches();
