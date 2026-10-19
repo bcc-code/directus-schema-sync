@@ -27,8 +27,8 @@ export class ExportManager {
 	}
 
 	// SECOND: Import if needed
-	public async loadAll(merge = false) {
-		await this._loadNextExporter(0, merge);
+	public async loadAll(merge = false, force = false) {
+		await this._loadNextExporter(0, merge, force);
 	}
 
 	protected refreshSchemaCache() {
@@ -38,15 +38,15 @@ export class ExportManager {
 		}
 	}
 
-	protected async _loadNextExporter(i = 0, merge = false) {
+	protected async _loadNextExporter(i = 0, merge = false, force = false) {
 		if (i >= this.exporters.length) return;
 
 		try {
-			const finishUp = await this.exporters[i]!.exporter.load(merge);
+			const finishUp = await this.exporters[i]!.exporter.load(merge, force);
 			if (this.exporters[i]!.exporter.name === 'schema') {
 				this.refreshSchemaCache();
 			}
-			await this._loadNextExporter(i + 1, merge);
+			await this._loadNextExporter(i + 1, merge, force);
 			if (typeof finishUp === 'function') await finishUp();
 		} catch (e) {
 			this.logger.error(`Failed loading "${this.exporters[i]!.exporter.name}".`);

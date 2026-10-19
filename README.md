@@ -160,11 +160,13 @@ Besides auto importing and exporting, you can also run the commands manually.
 | Command | Description |
 | ------- | ----------- |
 | `export` | Export the schema and data from the Directus API |
-| `import` | Import the schema and data to the Directus API (options: `merge`, `data`) |
+| `import` | Import the schema and data to the Directus API (options: `merge`, `data`, `-f, --force`) |
 | `hash`| Recalculate the schema hash in `schema.json` and the hash for all the data files. Run it after editing the exported files by hand (already happens after export) |
 | `install` | Install the extension's columns in the database and add the config folder (options: `force`) |
 | `export-schema` | Export only the schema (options: --split <boolean>) |
-| `import-schema` | Import only the schema |
+| `import-schema` | Import only the schema (options: `-f, --force`) |
+
+By default the schema is skipped when the schema files hash the same as the database's schema. Use `--force` (`-f`) to diff and apply it anyway. `SCHEMA_SYNC_SAFE` still applies.
 
 ## Migrating from V2 to V3
 

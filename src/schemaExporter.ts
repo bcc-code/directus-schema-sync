@@ -144,8 +144,9 @@ export class SchemaExporter implements IExporter {
 
 	/**
 	 * Import the schema from file to the database
+	 * @param force Diff and apply even when the hashes say it is up-to-date
 	 */
-	public load = async () => {
+	public load = async (_merge = false, force = false) => {
 		const fromFiles = await this.readSnapshotFromFiles();
 		if (!fromFiles) return;
 		const { snapshot } = fromFiles;
@@ -162,8 +163,11 @@ export class SchemaExporter implements IExporter {
 		// Clone since the hook mutates, and the diff/apply below need the untouched snapshot.
 		const currentHash = computeSchemaHash(exportHook(structuredClone(currentSnapshot)));
 		if (currentHash === filesHash) {
-			this.logger.info('Schema is already up-to-date');
-			return;
+			if (!force) {
+				this.logger.info('Schema is already up-to-date');
+				return;
+			}
+			this.logger.info('Schema seems up-to-date, diffing anyway since forced');
 		}
 
 		this.logger.info(`Diffing schema with hash: ${currentHash} and hash: ${filesHash}`);

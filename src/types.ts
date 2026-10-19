@@ -8,7 +8,8 @@ export type IGetItemsService = (collectionName: string) => Promise<IItemsService
 
 export interface IExporter {
 	name: string;
-	load: (merge?: boolean) => Promise<(() => Promise<void>) | null | void>;
+	/** @param force Import even when it seems up-to-date */
+	load: (merge?: boolean, force?: boolean) => Promise<(() => Promise<void>) | null | void>;
 	export: () => Promise<void>;
 	clearCache?: () => void;
 }

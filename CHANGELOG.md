@@ -3,6 +3,7 @@
   - **Added** `SCHEMA_SYNC=LAZY_IMPORT`, which imports in the background once the server is listening instead of delaying start-up. **The schema and data may be outdated for the first requests**, see [Lazy import](README.md#lazy-import).
   - **Fixed** Imported permissions, policies, roles, settings etc. could stay cached. After an import, Directus' caches are now flushed and other instances notified (via Redis), also after `npx directus schema-sync import`.
   - **Added** `npx directus schema-sync hash` also recalculates the schema hash in `schema.json`, for when the schema files were edited by hand.
+  - **Added** `--force` / `-f` on `import` and `import-schema` to diff and apply the schema even when it seems up-to-date ([#126](https://github.com/bcc-code/directus-schema-sync/issues/126)).
   - **Changed** The schema hash ignores the order of collections/fields/relations and the Directus version, so the schema files and the database hash the same when their schema is the same. Run `schema-sync hash` or export once after upgrading, until then imports log that the hash is outdated (harmless, the schema is diffed as before).
   - **Fixed** Import no longer trusts the hash stored in `schema.json`: it hashes the schema files, so hand edits with an outdated hash are no longer skipped as "already up-to-date".
   - **Fixed** Postgres: the "schema is already up-to-date" shortcut never matched (the export hook was not applied to the current snapshot before hashing), so every import diffed the full schema.
